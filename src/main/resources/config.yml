@@ -1,0 +1,34 @@
+sign:
+  sell: [Plot]
+  sold:
+  - Sold
+  - to
+  - %player%
+  -
+price: # Price to pay for creating a plot sell sign
+  fixed: 0.0 # Fixed price
+  share: 0.0 # Share of the plot's price
+tax: # Tax to be deducted from the region's price when the region is sold to another user
+  fixed: 0.0 # Fixed tax
+  share: 0.0 # Share of the price. Use 1.0 to not give the owner any money at all
+rights:
+  maxNumber: 9 # Maximum number to check the plotsigns.perm.<perm>.<number> permission for
+  groups: # Permission groups. Use with plotsigns.group.<groupname>
+    single: 1 # Allow players with plotsigns.group.single to only buy a single region
+lang:
+  create-sign:
+    no-permission: "&cYou don't have the permissions to create sell signs!"
+    missing-region: "&cYou need to specify a region name on the second line!"
+    missing-price: "&cYou need to specify a price on the third line!"
+    unknown-region: "&cNo region with the name %region% found!"
+    sign-outside-region: "&cYour sell sign needs to be inside the region!"
+    malformed-price: "&e%input%&c is not a valid price number!"
+    region-not-sellable: "&cThe region %region% can't be sold!"
+    cant-use-rights: "&cYou don't have the permissions to create sell signs with special rights!"
+    doesnt-own-plot: "&cYou don't have the permissions to create sell signs for plots that you don't own!"
+  buy:
+    bought-plot: "&eYou bought the plot %region% for %price%!"
+    not-enough-money: "&cYou don't have enough money to buy this plot!"
+    no-plot-permission: "&cYou have already bought the maximum amount of plots of this type!"
+    unknown-region: "&cNo region with the name %region% found!"
+    not-for-sale: "&cThis plot is not for sale!"

@@ -1,0 +1,37 @@
+name: ${project.name}
+version: '${minecraft.plugin.version}'
+main: de.minebench.plotsigns.PlotSigns
+depend: [WorldGuard]
+authors: [Phoenix616]
+commands:
+   plotsigns:
+      aliases: [plotsign,land]
+      description: Plugin command description.
+      usage: /<command> [reload]
+      permission: plotsigns.command
+      permission-message: You don't have the permission <permission>
+permissions:
+   plotsigns.command:
+      description: Gives permission to the plugin command
+      default: op
+   plotsigns.command.reload:
+      description: Gives permission to reload the plugin
+      default: op
+   plotsigns.sign.purchase:
+      description: Gives permission to purchase a plot via clicking on the sign
+      default: op
+   plotsigns.sign.create:
+      description: Gives permission to create plot signs
+      default: op
+   plotsigns.sign.create.outside:
+      description: Gives permission to create plot signs outside of the plot
+      default: op
+   plotsigns.sign.create.others:
+      description: Gives permission to create plot signs for plots that the player doesn't own
+      default: op
+   plotsigns.sign.create.rights:
+      description: Gives permission to set rights for buying a plot
+      default: op
+   plotsigns.sign.create.makebuyable:
+      description: Gives permission to create a sign for a non-buyable plot
+      default: op
