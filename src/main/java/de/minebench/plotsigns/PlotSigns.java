@@ -17,7 +17,10 @@ package de.minebench.plotsigns;
  */
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -75,6 +78,23 @@ public final class PlotSigns extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
         signSellLine = getConfig().getString("sign.sell");
+    }
+
+    /**
+     * Make a WorldGuard region buyable
+     * @param region The region to make buyable
+     * @param price The price the region should cost
+     * @param perm The right for the max region count, use null or empty string if it shouldn't be limited
+     * @throws IllegalArgumentException If the region's id or the permission string is longer than 15 chars
+     */
+    public void makeRegionBuyable(ProtectedRegion region, double price, String perm) throws IllegalArgumentException {
+        if (perm != null && perm.length() > 15)
+            throw new IllegalArgumentException("Permission string can't be longer than 15 chars! (It might not fit on a sign)");
+        if (region.getId().length() > 15)
+            throw new IllegalArgumentException("The region's ID can't be longer than 15 chars! (It might not fit on a sign)");
+        region.setFlag(DefaultFlag.BUYABLE, true);
+        region.setFlag(DefaultFlag.PRICE, price);
+        region.setFlag(PlotSigns.BUY_PERM_FLAG, perm == null || perm.isEmpty() ? null : perm);
     }
 
     public String getLang(String key, String... args) {
