@@ -21,10 +21,14 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,6 +38,37 @@ public class SignListener implements Listener {
 
     public SignListener(PlotSigns plugin) {
         this.plugin = plugin;
+    }
+
+    @EventHandler
+    public void onSignInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+
+        if (!(event.getClickedBlock().getState() instanceof Sign)) {
+            return;
+        }
+
+        Sign sign = (Sign) event.getClickedBlock().getState();
+
+        if (plugin.hasWriteIntent(event.getPlayer().getUniqueId())) {
+            // Write sign
+            String[] lines = plugin.getWriteIntent(event.getPlayer().getUniqueId());
+            SignChangeEvent sce = new SignChangeEvent(event.getClickedBlock(), event.getPlayer(), lines);
+            plugin.getServer().getPluginManager().callEvent(sce);
+            if (!sce.isCancelled()) {
+                for (int i = 0; i < sce.getLines().length; i++) {
+                    sign.setLine(i, sce.getLine(i));
+                }
+                sign.update();
+            }
+            event.setCancelled(true);
+            event.getPlayer().sendMessage(ChatColor.GREEN + "Sign successfully written!");
+
+        } else if (sign.getLines().length > 2 && sign.getLine(0).equalsIgnoreCase(plugin.getSellLine())) {
+            // Buy plot
+        }
     }
 
     @EventHandler(ignoreCancelled = true)

@@ -16,6 +16,8 @@ package de.minebench.plotsigns;
  * along with this program. If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.flags.StringFlag;
@@ -28,6 +30,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public final class PlotSigns extends JavaPlugin {
@@ -35,6 +39,8 @@ public final class PlotSigns extends JavaPlugin {
     private Economy economy;
     private WorldGuardPlugin worldGuard;
     private String signSellLine;
+
+    private Cache<UUID, String[]> writeIntents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
 
     public static final StringFlag BUY_PERM_FLAG = new StringFlag("buy-permission");
 
@@ -95,6 +101,18 @@ public final class PlotSigns extends JavaPlugin {
         region.setFlag(DefaultFlag.BUYABLE, true);
         region.setFlag(DefaultFlag.PRICE, price);
         region.setFlag(PlotSigns.BUY_PERM_FLAG, perm == null || perm.isEmpty() ? null : perm);
+    }
+
+    public void registerWriteIntent(UUID playerId, String[] lines) {
+        writeIntents.put(playerId, lines);
+    }
+
+    public boolean hasWriteIntent(UUID playerId) {
+        return writeIntents.getIfPresent(playerId) != null;
+    }
+
+    public String[] getWriteIntent(UUID playerId) {
+        return writeIntents.getIfPresent(playerId);
     }
 
     public String getLang(String key, String... args) {

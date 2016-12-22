@@ -92,6 +92,47 @@ public class PlotSignsCommand implements CommandExecutor {
                 }
                 return true;
 
+            } else if ("sign".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.sign")) {
+                // legacy sub command, you can write the signs directly
+                if (!(sender instanceof Player)) {
+                    sender.sendMessage(ChatColor.RED + "This command can only be run by a player!");
+                    return true;
+                }
+
+                if (args.length > 2) {
+                    ProtectedRegion region = getRegion(sender, args[1]);
+
+                    if (region == null) {
+                        sender.sendMessage(plugin.getLang("create-sign.unknown-region", "region", args[1]));
+                        return true;
+                    }
+
+                    if (sender instanceof Player && !region.getOwners().contains(((Player) sender).getUniqueId()) && !sender.hasPermission("plotsigns.command.sign.others")) {
+                        sender.sendMessage(plugin.getLang("create-sign.doesnt-own-plot"));
+                        return true;
+                    }
+
+                    if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE) || region.getFlag(DefaultFlag.PRICE) == null) {
+                        sender.sendMessage(plugin.getLang("create-sign.region-not-sellable", "region", region.getId()));
+                        return true;
+                    }
+
+                    String[] lines = new String[4];
+                    lines[0] = plugin.getSellLine();
+                    lines[1] = region.getId();
+                    lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
+                    lines[3] = region.getFlag(PlotSigns.BUY_PERM_FLAG) != null ? region.getFlag(PlotSigns.BUY_PERM_FLAG) : "";
+
+                    try {
+                        plugin.registerWriteIntent(((Player) sender).getUniqueId(), lines);
+                        sender.sendMessage(ChatColor.YELLOW + "Right click a Sign in the next 10 seconds to write it.");
+                    } catch (IllegalArgumentException e) {
+                        sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <permission>");
+                }
+                return true;
             }
         }
         return false;
