@@ -31,6 +31,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class SignListener implements Listener {
@@ -62,12 +63,59 @@ public class SignListener implements Listener {
                     sign.setLine(i, sce.getLine(i));
                 }
                 sign.update();
+                plugin.removeWriteIntent(event.getPlayer().getUniqueId());
             }
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.GREEN + "Sign successfully written!");
 
         } else if (sign.getLines().length > 2 && sign.getLine(0).equalsIgnoreCase(plugin.getSellLine())) {
             // Buy plot
+            event.setCancelled(true);
+
+            if (!event.getPlayer().hasPermission("plotsigns.sign.purchase")) {
+                event.getPlayer().sendMessage("buy.no-permission");
+                return;
+            }
+
+            ProtectedRegion region = plugin.getWorldGuard().getRegionManager(event.getClickedBlock().getWorld()).getRegion(sign.getLine(1));
+
+            if (region == null) {
+                event.getPlayer().sendMessage(plugin.getLang("error.unknown-region", "region", sign.getLine(1)));
+                return;
+            }
+
+            if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE)) {
+                event.getPlayer().sendMessage(plugin.getLang("buy.not-for-sale", "region", region.getId()));
+                return;
+            }
+
+            double price = 0.0;
+            try {
+                price = Double.parseDouble(sign.getLine(2));
+            } catch (NumberFormatException e) {
+                event.getPlayer().sendMessage(plugin.getLang("error.malformed-price", "input", sign.getLine(2)));
+                return;
+            }
+
+            if (region.getFlag(DefaultFlag.PRICE) != null && price != region.getFlag(DefaultFlag.PRICE)) {
+                plugin.getLogger().log(Level.WARNING, "The prices of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + price + ", WorldGuard price flag: " + region.getFlag(DefaultFlag.PRICE));
+                event.getPlayer().sendMessage(plugin.getLang("buy.price-mismatch", "sign", String.valueOf(price), "region", String.valueOf(region.getFlag(DefaultFlag.PRICE))));
+                return;
+            }
+
+            String perm = sign.getLine(3);
+            if (region.getFlag(PlotSigns.BUY_PERM_FLAG) != null && !region.getFlag(PlotSigns.BUY_PERM_FLAG).equals(perm)) {
+                plugin.getLogger().log(Level.WARNING, "The permissions of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + perm + ", WorldGuard price flag: " + region.getFlag(PlotSigns.BUY_PERM_FLAG));
+                event.getPlayer().sendMessage(plugin.getLang("buy.right-mismatch", "sign", perm, "region", region.getFlag(PlotSigns.BUY_PERM_FLAG)));
+                return;
+            }
+
+            try {
+                plugin.buyRegion(event.getPlayer(), region, price, perm);
+                event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
+            } catch (PlotSigns.BuyException e) {
+                event.getPlayer().sendMessage(e.getMessage());
+            }
         }
     }
 
@@ -92,7 +140,7 @@ public class SignListener implements Listener {
         if (!lines[1].isEmpty()) {
             region = plugin.getWorldGuard().getRegionManager(block.getWorld()).getRegion(lines[1]);
             if (region == null) {
-                player.sendMessage(plugin.getLang("create-sign.unknown-region", "region", lines[1]));
+                player.sendMessage(plugin.getLang("error.unknown-region", "region", lines[1]));
                 return false;
             }
         } else {
@@ -140,7 +188,7 @@ public class SignListener implements Listener {
             try {
                 price = Double.parseDouble(lines[2]);
             } catch (NumberFormatException e) {
-                player.sendMessage(plugin.getLang("create-sign.malformed-price", "input", lines[2]));
+                player.sendMessage(plugin.getLang("error.malformed-price", "input", lines[2]));
                 return false;
             }
         }
