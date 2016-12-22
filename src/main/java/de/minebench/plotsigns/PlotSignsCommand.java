@@ -20,9 +20,11 @@ import com.sk89q.worldguard.protection.flags.DefaultFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
+import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class PlotSignsCommand implements CommandExecutor {
@@ -140,8 +142,10 @@ public class PlotSignsCommand implements CommandExecutor {
 
     private ProtectedRegion getRegion(CommandSender sender, String id) {
         ProtectedRegion region = null;
-        if (sender instanceof Player) {
-            region = plugin.getWorldGuard().getRegionManager(((Player) sender).getWorld()).getRegion(id);
+        if (sender instanceof Entity) {
+            region = plugin.getWorldGuard().getRegionManager(((Entity) sender).getWorld()).getRegion(id);
+        } else if (sender instanceof BlockCommandSender) {
+            region = plugin.getWorldGuard().getRegionManager(((BlockCommandSender) sender).getBlock().getWorld()).getRegion(id);
         } else {
             for (RegionManager rm : plugin.getWorldGuard().getRegionContainer().getLoaded()) {
                 region = rm.getRegion(id);
