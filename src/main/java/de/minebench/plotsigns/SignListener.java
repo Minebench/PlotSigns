@@ -113,6 +113,13 @@ public class SignListener implements Listener {
             try {
                 plugin.buyRegion(event.getPlayer(), region, price, perm);
                 event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
+
+                List<String> soldLines = plugin.getConfig().getStringList("sign.sold");
+                for (int i = 0; i < soldLines.size(); i++) {
+                    sign.setLine(i, ChatColor.translateAlternateColorCodes('&', soldLines.get(i)).replace("%region%", region.getId()).replace("%player%", event.getPlayer().getName()));
+                }
+                sign.update();
+
             } catch (PlotSigns.BuyException e) {
                 event.getPlayer().sendMessage(e.getMessage());
             }
