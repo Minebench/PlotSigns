@@ -42,13 +42,43 @@ public class PlotSignsCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.YELLOW + "Config reloaded!");
                 return true;
 
+            } else if ("buy".equalsIgnoreCase(args[0]) || "kaufen".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.buy")) {
+                // legacy sub command, you can click on signs directly
+                if (args.length > 1) {
+                    if (!(sender instanceof Player)) {
+                        sender.sendMessage(ChatColor.RED + "This command can only be run by a player!");
+                        return true;
+                    }
+
+                    ProtectedRegion region = getRegion(sender, args[1]);
+
+                    if (region == null) {
+                        sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
+                        return true;
+                    }
+
+                    if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE) || region.getFlag(DefaultFlag.PRICE) == null) {
+                        sender.sendMessage(plugin.getLang("buy.not-for-sale", "region", region.getId()));
+                        return true;
+                    }
+
+                    try {
+                        plugin.buyRegion((Player) sender, region, region.getFlag(DefaultFlag.PRICE), region.getFlag(PlotSigns.BUY_PERM_FLAG));
+                        sender.sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
+                    } catch (PlotSigns.BuyException e) {
+                        sender.sendMessage(ChatColor.RED + "Error while trying to buy the region " + region.getId() + "! " + e.getMessage());
+                    }
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region>");
+                }
+
             } else if ("sell".equalsIgnoreCase(args[0]) || "verkaufen".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.sell")) {
                 // legacy sub command, you can write the signs directly
                 if (args.length > 2) {
                     ProtectedRegion region = getRegion(sender, args[1]);
 
                     if (region == null) {
-                        sender.sendMessage(plugin.getLang("create-sign.unknown-region", "region", args[1]));
+                        sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         return true;
                     }
 
@@ -60,7 +90,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     try {
                         plugin.makeRegionBuyable(region, Double.parseDouble(args[2]), region.getFlag(PlotSigns.BUY_PERM_FLAG));
                     } catch (NumberFormatException e) {
-                        sender.sendMessage(plugin.getLang("create-sign.malformed-price", "input", args[2]));
+                        sender.sendMessage(plugin.getLang("error.malformed-price", "input", args[2]));
                     } catch (IllegalArgumentException e) {
                         sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
                     }
@@ -75,7 +105,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     ProtectedRegion region = getRegion(sender, args[1]);
 
                     if (region == null) {
-                        sender.sendMessage(plugin.getLang("create-sign.unknown-region", "region", args[1]));
+                        sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         return true;
                     }
 
@@ -105,7 +135,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     ProtectedRegion region = getRegion(sender, args[1]);
 
                     if (region == null) {
-                        sender.sendMessage(plugin.getLang("create-sign.unknown-region", "region", args[1]));
+                        sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         return true;
                     }
 

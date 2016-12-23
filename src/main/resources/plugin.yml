@@ -7,12 +7,24 @@ commands:
    plotsigns:
       aliases: [plotsign,land]
       description: Plugin command description.
-      usage: /<command> [reload]
+      usage: /<command> [buy|sell|permission|sign|reload]
       permission: plotsigns.command
       permission-message: You don't have the permission <permission>
 permissions:
    plotsigns.command:
       description: Gives permission to the plugin command
+      default: op
+   plotsigns.command.buy:
+      description: Gives permission to buy regions via the command
+      default: op
+   plotsigns.command.sell:
+      description: Gives permission to sell regions via the command
+      default: op
+   plotsigns.command.permission:
+      description: Gives permission to set the permission of a region via the command
+      default: op
+   plotsigns.command.sign:
+      description: Gives permission to write a sell sign via the command
       default: op
    plotsigns.command.reload:
       description: Gives permission to reload the plugin
