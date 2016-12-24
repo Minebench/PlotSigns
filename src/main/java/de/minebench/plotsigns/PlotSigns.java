@@ -248,6 +248,25 @@ public final class PlotSigns extends JavaPlugin {
         writeIntents.invalidate(playerId);
     }
 
+    /**
+     * Get the lines that should go onto a sign for a specific region
+     * @param region The region to sell
+     * @return An array with the length 4 with the lines
+     * @throws IllegalArgumentException when the region doesn't have a price set
+     */
+    public String[] getSignLines(ProtectedRegion region) throws IllegalArgumentException{
+        if (region.getFlag(DefaultFlag.PRICE) == null) {
+            throw new IllegalArgumentException("The region " + region.getId() + " does not have the price flag set?");
+        }
+        String[] lines = new String[4];
+        lines[0] = getSellLine();
+        lines[1] = region.getId();
+        lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
+        lines[3] = region.getFlag(PlotSigns.BUY_PERM_FLAG) != null ? region.getFlag(PlotSigns.BUY_PERM_FLAG) : "";
+
+        return lines;
+    }
+
     public String getLang(String key, String... args) {
         String message = getConfig().getString("lang." + key, getName() + ": &cUnknown language key &6" + key + "&c!");
         for (int i = 0; i + 1 < args.length; i += 2) {

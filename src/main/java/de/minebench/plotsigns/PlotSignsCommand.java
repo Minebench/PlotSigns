@@ -149,14 +149,8 @@ public class PlotSignsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    String[] lines = new String[4];
-                    lines[0] = plugin.getSellLine();
-                    lines[1] = region.getId();
-                    lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
-                    lines[3] = region.getFlag(PlotSigns.BUY_PERM_FLAG) != null ? region.getFlag(PlotSigns.BUY_PERM_FLAG) : "";
-
                     try {
-                        plugin.registerWriteIntent(((Player) sender).getUniqueId(), lines);
+                        plugin.registerWriteIntent(((Player) sender).getUniqueId(), plugin.getSignLines(region));
                         sender.sendMessage(ChatColor.YELLOW + "Right click a Sign in the next 10 seconds to write it.");
                     } catch (IllegalArgumentException e) {
                         sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
