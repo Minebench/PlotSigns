@@ -1,9 +1,9 @@
 sign:
   sell: [Plot]
   sold:
-  - Sold
-  - to
-  - %player%
+  - "Sold"
+  - "to"
+  - "%player%"
   -
 tax: # Tax to be deducted from the region's price when the region is sold to another user
   fixed: 0.0 # Fixed tax
