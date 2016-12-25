@@ -50,13 +50,7 @@ public final class PlotSigns extends JavaPlugin {
     public static final StringFlag BUY_PERM_FLAG = new StringFlag("buy-permission");
 
     @Override
-    public void onEnable() {
-        loadConfig();
-        if (!setupEconomy()) {
-            getLogger().log(Level.SEVERE, "Failed to hook into Vault! The plugin will not run without it!");
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+    public void onLoad() {
         if (getServer().getPluginManager().isPluginEnabled("WorldGuard")) {
             worldGuard = WorldGuardPlugin.inst();
         } else {
@@ -67,7 +61,17 @@ public final class PlotSigns extends JavaPlugin {
         try {
             worldGuard.getFlagRegistry().register(BUY_PERM_FLAG);
         } catch (FlagConflictException e) {
-            getLogger().log(Level.WARNING, "Error while registering the buy flag: " + e.getMessage());
+            getLogger().log(Level.WARNING, "Error while registering the buy perm flag: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onEnable() {
+        loadConfig();
+        if (!setupEconomy()) {
+            getLogger().log(Level.SEVERE, "Failed to hook into Vault! The plugin will not run without it!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
         }
         getServer().getPluginManager().registerEvents(new SignListener(this), this);
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
@@ -75,7 +79,7 @@ public final class PlotSigns extends JavaPlugin {
     }
 
     private boolean setupEconomy() {
-        if (getServer().getPluginManager().isPluginEnabled("Vault")) {
+        if (!getServer().getPluginManager().isPluginEnabled("Vault")) {
             return false;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
