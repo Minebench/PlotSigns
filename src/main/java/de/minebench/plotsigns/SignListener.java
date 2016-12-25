@@ -113,7 +113,7 @@ public class SignListener implements Listener {
 
             try {
                 plugin.buyRegion(event.getPlayer(), region, price, perm);
-                event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
+                event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId(), "price", String.valueOf(price)));
 
                 List<String> soldLines = plugin.getConfig().getStringList("sign.sold");
                 for (int i = 0; i < soldLines.size(); i++) {
