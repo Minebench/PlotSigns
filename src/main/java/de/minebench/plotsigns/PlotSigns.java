@@ -51,9 +51,7 @@ public final class PlotSigns extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        if (getServer().getPluginManager().isPluginEnabled("WorldGuard")) {
-            worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
-        }
+        worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard == null) {
             getLogger().log(Level.SEVERE, "You don't seem to have WorldGuard installed? The plugin will not run without it!");
             getServer().getPluginManager().disablePlugin(this);
