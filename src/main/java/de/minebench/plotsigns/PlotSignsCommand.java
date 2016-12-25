@@ -131,7 +131,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     return true;
                 }
 
-                if (args.length > 2) {
+                if (args.length > 1) {
                     ProtectedRegion region = getRegion(sender, args[1]);
 
                     if (region == null) {
@@ -156,7 +156,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <permission>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region>");
                 }
                 return true;
             }
