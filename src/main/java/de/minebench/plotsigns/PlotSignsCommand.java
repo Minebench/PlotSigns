@@ -88,7 +88,10 @@ public class PlotSignsCommand implements CommandExecutor {
                     }
 
                     try {
-                        plugin.makeRegionBuyable(region, Double.parseDouble(args[2]), region.getFlag(PlotSigns.BUY_PERM_FLAG));
+                        double price = Double.parseDouble(args[2]);
+                        String perm = region.getFlag(PlotSigns.BUY_PERM_FLAG);
+                        plugin.makeRegionBuyable(region, Double.parseDouble(args[2]), perm);
+                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", perm));
                     } catch (NumberFormatException e) {
                         sender.sendMessage(plugin.getLang("error.malformed-price", "input", args[2]));
                     } catch (IllegalArgumentException e) {
