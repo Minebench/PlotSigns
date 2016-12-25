@@ -16,6 +16,7 @@ lang:
   error:
     malformed-price: "&c%input% is not a valid price number!"
     unknown-region: "&cNo region with the name %region% found!"
+    world-not-supported: "&cWorldGuard is not enabled in your world!"
   create-sign:
     success: "&aSell sign for region &e%region%&a created! Price: &e%price%&a, Permission: &e%perm%"
     no-permission: "&cYou don't have the permissions to create sell signs!"

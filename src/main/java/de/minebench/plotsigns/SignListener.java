@@ -18,6 +18,7 @@ package de.minebench.plotsigns;
 
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -145,7 +146,12 @@ public class SignListener implements Listener {
 
         ProtectedRegion region;
         if (!lines[1].isEmpty()) {
-            region = plugin.getWorldGuard().getRegionManager(block.getWorld()).getRegion(lines[1]);
+            RegionManager rm = plugin.getWorldGuard().getRegionManager(block.getWorld());
+            if (rm == null) {
+                player.sendMessage(plugin.getLang("error.world-not-supported"));
+                return false;
+            }
+            region = rm.getRegion(lines[1]);
             if (region == null) {
                 player.sendMessage(plugin.getLang("error.unknown-region", "region", lines[1]));
                 return false;

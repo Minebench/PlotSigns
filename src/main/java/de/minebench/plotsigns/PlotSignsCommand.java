@@ -165,20 +165,25 @@ public class PlotSignsCommand implements CommandExecutor {
     }
 
     private ProtectedRegion getRegion(CommandSender sender, String id) {
-        ProtectedRegion region = null;
+        RegionManager regionManager;
         if (sender instanceof Entity) {
-            region = plugin.getWorldGuard().getRegionManager(((Entity) sender).getWorld()).getRegion(id);
+            regionManager = plugin.getWorldGuard().getRegionManager(((Entity) sender).getWorld());
         } else if (sender instanceof BlockCommandSender) {
-            region = plugin.getWorldGuard().getRegionManager(((BlockCommandSender) sender).getBlock().getWorld()).getRegion(id);
+            regionManager = plugin.getWorldGuard().getRegionManager(((BlockCommandSender) sender).getBlock().getWorld());
         } else {
             for (RegionManager rm : plugin.getWorldGuard().getRegionContainer().getLoaded()) {
-                region = rm.getRegion(id);
+                ProtectedRegion region = rm.getRegion(id);
                 if (region != null) {
-                    break;
+                    return region;
                 }
             }
+            return null;
         }
-        return region;
+        if (regionManager == null) {
+            sender.sendMessage(plugin.getLang("error.world-not-supported"));
+            return null;
+        }
+        return regionManager.getRegion(id);
     }
 
 }
