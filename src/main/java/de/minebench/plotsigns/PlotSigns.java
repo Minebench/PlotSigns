@@ -54,7 +54,6 @@ public final class PlotSigns extends JavaPlugin {
         worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard == null) {
             getLogger().log(Level.SEVERE, "You don't seem to have WorldGuard installed? The plugin will not run without it!");
-            getServer().getPluginManager().disablePlugin(this);
             return;
         }
         try {
@@ -66,6 +65,10 @@ public final class PlotSigns extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (worldGuard == null) {
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         loadConfig();
         if (!setupEconomy()) {
             getLogger().log(Level.SEVERE, "Failed to hook into Vault! The plugin will not run without it!");
