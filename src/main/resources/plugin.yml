@@ -44,8 +44,8 @@ permissions:
    plotsigns.sign.create.others:
       description: Gives permission to create plot signs for plots that the player doesn't own
       default: op
-   plotsigns.sign.create.rights:
-      description: Gives permission to set rights for buying a plot
+   plotsigns.sign.create.type:
+      description: Gives permission to set the type of a plot
       default: op
    plotsigns.sign.create.makebuyable:
       description: Gives permission to create a sign for a non-buyable plot

@@ -25,7 +25,7 @@ lang:
     missing-price: "&cYou need to specify a price on the third line!"
     sign-outside-region: "&cYour sell sign needs to be inside the region!"
     region-not-sellable: "&cThe region %region% can't be sold!"
-    cant-use-rights: "&cYou don't have the permissions to set the rights for a region!"
+    cant-set-type: "&cYou don't have the permissions to set the type of a region!"
     doesnt-own-plot: "&cYou don't have the permissions to create sell signs for plots that you don't own!"
   buy:
     bought-plot: "&aYou bought the plot &e%region%&a for &e%price%&a!"

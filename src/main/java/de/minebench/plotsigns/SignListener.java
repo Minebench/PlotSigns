@@ -211,10 +211,10 @@ public class SignListener implements Listener {
             type = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
         }
         if (!lines[3].isEmpty()) {
-            if (player.hasPermission("plotsigns.sign.create.rights")) {
+            if (player.hasPermission("plotsigns.sign.create.type")) {
                 type = lines[3];
             } else {
-                player.sendMessage(plugin.getLang("create-sign.cant-use-rights"));
+                player.sendMessage(plugin.getLang("create-sign.cant-set-type"));
             }
         }
 
