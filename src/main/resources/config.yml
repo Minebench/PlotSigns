@@ -4,13 +4,13 @@ sign:
   - "Sold"
   - "to"
   - "%player%"
-  -
+  - ""
 tax: # Tax to be deducted from the region's price when the region is sold to another user
   fixed: 0.0 # Fixed tax
   share: 0.0 # Share of the price. Use 1.0 to not give the owner any money at all
 rights:
-  maxNumber: 9 # Maximum number to check the plotsigns.perm.<perm>.<number> permission for
-  groups: # Permission groups. Use with plotsigns.group.<groupname>
+  maxNumber: 9 # Maximum number to check the plotsigns.type.<type>.<number> permission for
+  groups: # Predefined type groups. Use with plotsigns.group.<groupname>
     single: 1 # Allow players with plotsigns.group.single to only buy one region of that type in a world
 lang:
   error:
@@ -18,7 +18,7 @@ lang:
     unknown-region: "&cNo region with the name %region% found!"
     world-not-supported: "&cWorldGuard is not enabled in your world!"
   create-sign:
-    success: "&aSell sign for region &e%region%&a created! Price: &e%price%&a, Permission: &e%perm%"
+    success: "&aSell sign for region &e%region%&a created! Price: &e%price%&a, Type: &e%type%"
     no-permission: "&cYou don't have the permissions to create sell signs!"
     missing-region: "&cYou need to specify a region name on the second line!"
     missing-price: "&cYou need to specify a price on the third line!"
@@ -30,7 +30,7 @@ lang:
     bought-plot: "&aYou bought the plot &e%region%&a for &e%price%&a!"
     your-plot-sold: "&aYour plot &e%region%&a was sold to &e%buyer%&a for &e%price%&a! You've earned &e%earned%&a"
     not-enough-money: "&cYou don't have enough money to buy this plot!"
-    no-plot-permission: "&cYou have already bought the maximum amount of plots of the type %permission%!"
+    maximum-type-count: "&cYou have already bought the maximum amount of plots of the type %type%!"
     not-for-sale: "&cThis plot is not for sale!"
     no-permission: "&cYou don't have the permissions to buy plots with sell signs!"
     price-mismatch: "&cError: The price on the sign (%sign%) does not match the price configured for this region (%region%)"

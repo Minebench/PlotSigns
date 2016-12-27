@@ -63,7 +63,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     }
 
                     try {
-                        plugin.buyRegion((Player) sender, region, region.getFlag(DefaultFlag.PRICE), region.getFlag(PlotSigns.BUY_PERM_FLAG));
+                        plugin.buyRegion((Player) sender, region, region.getFlag(DefaultFlag.PRICE), region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
                         sender.sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
                     } catch (PlotSigns.BuyException e) {
                         sender.sendMessage(ChatColor.RED + "Error while trying to buy the region " + region.getId() + "! " + e.getMessage());
@@ -89,7 +89,7 @@ public class PlotSignsCommand implements CommandExecutor {
 
                     try {
                         double price = Double.parseDouble(args[2]);
-                        String perm = region.getFlag(PlotSigns.BUY_PERM_FLAG);
+                        String perm = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
                         plugin.makeRegionBuyable(region, Double.parseDouble(args[2]), perm);
                         sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", perm));
                     } catch (NumberFormatException e) {
@@ -102,7 +102,7 @@ public class PlotSignsCommand implements CommandExecutor {
                 }
                 return true;
 
-            } else if ("permission".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.permission")) {
+            } else if ("type".equalsIgnoreCase(args[0]) || "permission".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.type")) {
                 // legacy sub command, you can write the signs directly
                 if (args.length > 2) {
                     ProtectedRegion region = getRegion(sender, args[1]);
@@ -112,7 +112,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if (sender instanceof Player && !region.getOwners().contains(((Player) sender).getUniqueId()) && !sender.hasPermission("plotsigns.command.permission.others")) {
+                    if (sender instanceof Player && !region.getOwners().contains(((Player) sender).getUniqueId()) && !sender.hasPermission("plotsigns.command.type.others")) {
                         sender.sendMessage(plugin.getLang("create-sign.doesnt-own-plot"));
                         return true;
                     }
@@ -120,10 +120,10 @@ public class PlotSignsCommand implements CommandExecutor {
                     try {
                         plugin.makeRegionBuyable(region, region.getFlag(DefaultFlag.PRICE), args[2]);
                     } catch (IllegalArgumentException e) {
-                        sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
+                        sender.sendMessage(ChatColor.RED + "Error while settings the region's type! " + e.getMessage());
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <permission>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <type>");
                 }
                 return true;
 

@@ -47,7 +47,7 @@ public final class PlotSigns extends JavaPlugin {
     private Cache<UUID, String[]> writeIntents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
     private Cache<UUID, List<String>> messageIntents = CacheBuilder.newBuilder().maximumSize(1000).build();
 
-    public static final StringFlag BUY_PERM_FLAG = new StringFlag("buy-permission");
+    public static final StringFlag PLOT_TYPE_FLAG = new StringFlag("plot-type");
 
     @Override
     public void onLoad() {
@@ -57,9 +57,9 @@ public final class PlotSigns extends JavaPlugin {
             return;
         }
         try {
-            worldGuard.getFlagRegistry().register(BUY_PERM_FLAG);
+            worldGuard.getFlagRegistry().register(PLOT_TYPE_FLAG);
         } catch (FlagConflictException e) {
-            getLogger().log(Level.WARNING, "Error while registering the buy perm flag: " + e.getMessage());
+            getLogger().log(Level.WARNING, "Error while registering the plot type flag: " + e.getMessage());
         }
     }
 
@@ -102,17 +102,17 @@ public final class PlotSigns extends JavaPlugin {
      * Make a WorldGuard region buyable
      * @param region The region to make buyable
      * @param price The price the region should cost
-     * @param perm The right for the max region count, use null or empty string if it shouldn't be limited
+     * @param type The right for the max region count, use null or empty string if it shouldn't be limited
      * @throws IllegalArgumentException If the region's id or the permission string is longer than 15 chars
      */
-    public void makeRegionBuyable(ProtectedRegion region, double price, String perm) throws IllegalArgumentException {
-        if (perm != null && perm.length() > 15)
-            throw new IllegalArgumentException("Permission string can't be longer than 15 chars! (It might not fit on a sign)");
+    public void makeRegionBuyable(ProtectedRegion region, double price, String type) throws IllegalArgumentException {
+        if (type != null && type.length() > 15)
+            throw new IllegalArgumentException("Type string can't be longer than 15 chars! (It might not fit on a sign)");
         if (region.getId().length() > 15)
             throw new IllegalArgumentException("The region's ID can't be longer than 15 chars! (It might not fit on a sign)");
         region.setFlag(DefaultFlag.BUYABLE, true);
         region.setFlag(DefaultFlag.PRICE, price);
-        region.setFlag(PlotSigns.BUY_PERM_FLAG, perm == null || perm.isEmpty() ? null : perm);
+        region.setFlag(PlotSigns.PLOT_TYPE_FLAG, type == null || type.isEmpty() ? null : type);
     }
 
     /**
@@ -120,10 +120,10 @@ public final class PlotSigns extends JavaPlugin {
      * @param player The player that should buy the region
      * @param region The region to buy
      * @param price The price of the region
-     * @param permission The region's count permission
+     * @param type The region's type for the count
      * @throws BuyException if the player can't buy the region for whatever reason
      */
-    public void buyRegion(Player player, ProtectedRegion region, double price, String permission) throws BuyException {
+    public void buyRegion(Player player, ProtectedRegion region, double price, String type) throws BuyException {
         if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE)) {
             throw new BuyException(getLang("buy.not-for-sale", "region", region.getId()));
         }
@@ -132,8 +132,8 @@ public final class PlotSigns extends JavaPlugin {
             throw new BuyException(getLang("buy.not-enough-money", "region", region.getId(), "price", String.valueOf(price)));
         }
 
-        if (!checkPermissions(player, player.getWorld(), permission)) {
-            throw new BuyException(getLang("buy.no-plot-permission", "region", region.getId(), "permission", permission));
+        if (!checkTypeCount(player, player.getWorld(), type)) {
+            throw new BuyException(getLang("buy.maximum-type-count", "region", region.getId(), "type", type));
         }
 
         double earnedPerOwner = price - getConfig().getDouble("tax.fixed", 0) - price * getConfig().getDouble("tax.share", 0);
@@ -173,30 +173,30 @@ public final class PlotSigns extends JavaPlugin {
         if (region.getFlag(DefaultFlag.PRICE) == null) {
             region.setFlag(DefaultFlag.PRICE, price);
         }
-        if (region.getFlag(BUY_PERM_FLAG) == null && permission != null && !permission.isEmpty()) {
-            region.setFlag(BUY_PERM_FLAG, permission);
+        if (region.getFlag(PLOT_TYPE_FLAG) == null && type != null && !type.isEmpty()) {
+            region.setFlag(PLOT_TYPE_FLAG, type);
         }
         region.getOwners().clear();
         region.getOwners().addPlayer(player.getUniqueId());
     }
 
-    public boolean checkPermissions(Player player, World world, String permission) {
-        if (player.hasPermission("plotsigns.perm." + permission + ".unlimited") || player.hasPermission("plotsigns.group." + permission + ".unlimited")) {
+    public boolean checkTypeCount(Player player, World world, String type) {
+        if (player.hasPermission("plotsigns.type." + type + ".unlimited") || player.hasPermission("plotsigns.group." + type + ".unlimited")) {
             return true;
         }
 
         int maxAmount = 0;
-        if (getConfig().contains("rights.groups." + permission) && player.hasPermission("plotsigns.group." + permission)) {
-            maxAmount = getConfig().getInt("rights.groups." + permission);
+        if (getConfig().contains("rights.groups." + type) && player.hasPermission("plotsigns.group." + type)) {
+            maxAmount = getConfig().getInt("rights.groups." + type);
         } else {
             for (int i = getConfig().getInt("rights.maxNumber"); i > 0; i--) {
-                if (player.hasPermission("plotsigns.perm." + permission + "." + i)) {
+                if (player.hasPermission("plotsigns.type." + type + "." + i)) {
                     maxAmount = i;
                     break;
                 }
             }
         }
-        if (maxAmount == 0 && player.hasPermission("plotsigns.perm." + permission)) {
+        if (maxAmount == 0 && player.hasPermission("plotsigns.type." + type)) {
             maxAmount = 1;
         }
 
@@ -206,7 +206,7 @@ public final class PlotSigns extends JavaPlugin {
 
         int count = 0;
         for (ProtectedRegion region : getWorldGuard().getRegionManager(world).getRegions().values()) {
-            if (region.getOwners().contains(player.getUniqueId()) && region.getFlag(BUY_PERM_FLAG) != null && permission.equals(region.getFlag(BUY_PERM_FLAG))) {
+            if (region.getOwners().contains(player.getUniqueId()) && region.getFlag(PLOT_TYPE_FLAG) != null && type.equals(region.getFlag(PLOT_TYPE_FLAG))) {
                 count++;
                 if (count >= maxAmount) {
                     return false;
@@ -268,7 +268,7 @@ public final class PlotSigns extends JavaPlugin {
         lines[0] = getSellLine();
         lines[1] = region.getId();
         lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
-        lines[3] = region.getFlag(PlotSigns.BUY_PERM_FLAG) != null ? region.getFlag(PlotSigns.BUY_PERM_FLAG) : "";
+        lines[3] = region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null ? region.getFlag(PlotSigns.PLOT_TYPE_FLAG) : "";
 
         return lines;
     }

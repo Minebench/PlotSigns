@@ -105,9 +105,9 @@ public class SignListener implements Listener {
             }
 
             String perm = sign.getLine(3);
-            if (region.getFlag(PlotSigns.BUY_PERM_FLAG) != null && !region.getFlag(PlotSigns.BUY_PERM_FLAG).equals(perm)) {
-                plugin.getLogger().log(Level.WARNING, "The permissions of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + perm + ", WorldGuard price flag: " + region.getFlag(PlotSigns.BUY_PERM_FLAG));
-                event.getPlayer().sendMessage(plugin.getLang("buy.right-mismatch", "sign", perm, "region", region.getFlag(PlotSigns.BUY_PERM_FLAG)));
+            if (region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null && !region.getFlag(PlotSigns.PLOT_TYPE_FLAG).equals(perm)) {
+                plugin.getLogger().log(Level.WARNING, "The permissions of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + perm + ", WorldGuard price flag: " + region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
+                event.getPlayer().sendMessage(plugin.getLang("buy.right-mismatch", "sign", perm, "region", region.getFlag(PlotSigns.PLOT_TYPE_FLAG)));
                 return;
             }
 
@@ -206,20 +206,20 @@ public class SignListener implements Listener {
             }
         }
 
-        String perm = "";
-        if (region.getFlag(PlotSigns.BUY_PERM_FLAG) != null) {
-            perm = region.getFlag(PlotSigns.BUY_PERM_FLAG);
+        String type = "";
+        if (region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null) {
+            type = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
         }
         if (!lines[3].isEmpty()) {
             if (player.hasPermission("plotsigns.sign.create.rights")) {
-                perm = lines[3];
+                type = lines[3];
             } else {
                 player.sendMessage(plugin.getLang("create-sign.cant-use-rights"));
             }
         }
 
         try {
-            plugin.makeRegionBuyable(region, price, perm);
+            plugin.makeRegionBuyable(region, price, type);
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());
             return false;
@@ -227,9 +227,9 @@ public class SignListener implements Listener {
 
         lines[1] = region.getId();
         lines[2] = String.valueOf(price);
-        lines[3] = perm;
+        lines[3] = type;
 
-        player.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", perm));
+        player.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "type", type));
         return true;
     }
 }
