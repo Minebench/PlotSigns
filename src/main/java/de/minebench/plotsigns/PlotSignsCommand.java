@@ -27,6 +27,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PlotSignsCommand implements CommandExecutor {
     private final PlotSigns plugin;
 
@@ -44,16 +47,31 @@ public class PlotSignsCommand implements CommandExecutor {
 
             } else if ("buy".equalsIgnoreCase(args[0]) || "kaufen".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.buy")) {
                 // legacy sub command, you can click on signs directly
-                if (args.length > 1) {
+                if (args.length > 0) {
                     if (!(sender instanceof Player)) {
                         sender.sendMessage(ChatColor.RED + "This command can only be run by a player!");
                         return true;
                     }
 
-                    ProtectedRegion region = getRegion(sender, args[1]);
+                    ProtectedRegion region = null;
+
+                    if (args.length > 1 && sender.hasPermission("plotsigns.command.buy.byregionid")) {
+                        region = plugin.getWorldGuard().getRegionManager(((Player) sender).getWorld()).getRegion(args[1]);
+                        if (region == null) {
+                            sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
+                        }
+                    } else {
+                        List<ProtectedRegion> regions = new ArrayList<>(plugin.getWorldGuard().getRegionManager(((Player) sender).getWorld()).getApplicableRegions(((Player) sender).getLocation()).getRegions());
+                        if (regions.size() > 0) {
+                            regions.sort((r1, r2) -> Integer.compare(r2.getPriority(), r1.getPriority()));
+                            region = regions.get(0);
+                        }
+                        if (region == null) {
+                            sender.sendMessage(plugin.getLang("error.no-region-at-location"));
+                        }
+                    }
 
                     if (region == null) {
-                        sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         return true;
                     }
 
@@ -69,7 +87,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         sender.sendMessage(ChatColor.RED + "Error while trying to buy the region " + region.getId() + "! " + e.getMessage());
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " [<region>]");
                 }
 
             } else if ("sell".equalsIgnoreCase(args[0]) || "verkaufen".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.sell")) {

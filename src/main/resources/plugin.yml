@@ -17,6 +17,9 @@ permissions:
    plotsigns.command.buy:
       description: Gives permission to buy regions via the command
       default: op
+   plotsigns.command.buy.byregionid:
+      description: Gives permission to buy a specific region via the command
+      default: op
    plotsigns.command.sell:
       description: Gives permission to sell regions via the command
       default: op
