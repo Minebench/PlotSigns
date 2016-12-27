@@ -8,10 +8,11 @@ sign:
 tax: # Tax to be deducted from the region's price when the region is sold to another user
   fixed: 0.0 # Fixed tax
   share: 0.0 # Share of the price. Use 1.0 to not give the owner any money at all
-rights:
-  maxNumber: 9 # Maximum number to check the plotsigns.type.<type>.<number> permission for
+type-counts:
+  max-number: 9 # Maximum number to check the plotsigns.type.<type>.<number> permission for
   groups: # Predefined type groups. Use with plotsigns.group.<groupname>
     single: 1 # Allow players with plotsigns.group.single to only buy one region of that type in a world
+    dozen: 12
 lang:
   error:
     malformed-price: "&c%input% is not a valid price number!"

@@ -185,19 +185,16 @@ public final class PlotSigns extends JavaPlugin {
             return true;
         }
 
-        int maxAmount = 0;
-        if (getConfig().contains("rights.groups." + type) && player.hasPermission("plotsigns.group." + type)) {
-            maxAmount = getConfig().getInt("rights.groups." + type);
+        int maxAmount = 1;
+        if (getConfig().contains("type-counts.groups." + type) && player.hasPermission("plotsigns.group." + type)) {
+            maxAmount = getConfig().getInt("type-counts.groups." + type);
         } else {
-            for (int i = getConfig().getInt("rights.maxNumber"); i > 0; i--) {
+            for (int i = getConfig().getInt("type-counts.max-number"); i >= 0; i--) {
                 if (player.hasPermission("plotsigns.type." + type + "." + i)) {
                     maxAmount = i;
                     break;
                 }
             }
-        }
-        if (maxAmount == 0 && player.hasPermission("plotsigns.type." + type)) {
-            maxAmount = 1;
         }
 
         if (maxAmount == 0) {
