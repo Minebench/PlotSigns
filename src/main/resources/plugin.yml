@@ -23,8 +23,8 @@ permissions:
    plotsigns.command.sell:
       description: Gives permission to sell regions via the command
       default: op
-   plotsigns.command.permission:
-      description: Gives permission to set the permission of a region via the command
+   plotsigns.command.type:
+      description: Gives permission to set the type of a region via the command
       default: op
    plotsigns.command.sign:
       description: Gives permission to write a sell sign via the command
