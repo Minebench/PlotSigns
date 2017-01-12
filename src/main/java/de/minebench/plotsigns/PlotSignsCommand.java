@@ -136,7 +136,13 @@ public class PlotSignsCommand implements CommandExecutor {
                     }
 
                     try {
-                        plugin.makeRegionBuyable(region, region.getFlag(DefaultFlag.PRICE), args[2]);
+                        Double price = region.getFlag(DefaultFlag.PRICE);
+                        if (price == null) {
+                            sender.sendMessage(plugin.getLang("create-sign.region-not-sellable", "region", region.getId()));
+                            return true;
+                        }
+                        plugin.makeRegionBuyable(region, price, args[2]);
+                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", args[2]));
                     } catch (IllegalArgumentException e) {
                         sender.sendMessage(ChatColor.RED + "Error while settings the region's type! " + e.getMessage());
                     }
