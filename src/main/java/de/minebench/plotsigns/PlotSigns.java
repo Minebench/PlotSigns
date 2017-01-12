@@ -273,7 +273,7 @@ public final class PlotSigns extends JavaPlugin {
     public String getLang(String key, String... args) {
         String message = getConfig().getString("lang." + key, getName() + ": &cUnknown language key &6" + key + "&c!");
         for (int i = 0; i + 1 < args.length; i += 2) {
-            message = message.replace("%" + args[i] + "%", args[i+1]);
+            message = message.replace("%" + args[i] + "%", args[i+1] != null ? args[i+1] : "null");
         }
         return ChatColor.translateAlternateColorCodes('&', message);
     }
