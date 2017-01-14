@@ -109,7 +109,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         double price = Double.parseDouble(args[2]);
                         String perm = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
                         plugin.makeRegionBuyable(region, price, perm);
-                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", perm));
+                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "type", perm));
                     } catch (NumberFormatException e) {
                         sender.sendMessage(plugin.getLang("error.malformed-price", "input", args[2]));
                     } catch (IllegalArgumentException e) {
@@ -142,7 +142,7 @@ public class PlotSignsCommand implements CommandExecutor {
                             return true;
                         }
                         plugin.makeRegionBuyable(region, price, args[2]);
-                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "perm", args[2]));
+                        sender.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "type", args[2]));
                     } catch (IllegalArgumentException e) {
                         sender.sendMessage(ChatColor.RED + "Error while settings the region's type! " + e.getMessage());
                     }
