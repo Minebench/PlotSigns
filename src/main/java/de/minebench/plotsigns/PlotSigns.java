@@ -147,12 +147,16 @@ public final class PlotSigns extends JavaPlugin {
             throw new BuyException(withdraw.errorMessage);
         }
 
+        getLogger().log(Level.INFO, player.getName() + "/" + player.getUniqueId() + " bought region " + region.getId() + " for " + price + (type.isEmpty() ? "" : " Type: " + type));
+
         if (region.getOwners().size() > 0) {
             for (UUID ownerId : region.getOwners().getUniqueIds()) {
                 OfflinePlayer owner = getServer().getOfflinePlayer(ownerId);
                 EconomyResponse deposit = getEconomy().depositPlayer(owner, earnedPerOwner);
                 if (!deposit.transactionSuccess()) {
-                    getLogger().log(Level.WARNING, "Error while depositing " + deposit.amount + " to " + ownerId + " from region " + region.getId() + ". " + deposit.errorMessage);
+                    getLogger().log(Level.WARNING, "Error while depositing " + deposit.amount + " to " + owner.getName() + "/" + ownerId + " from region " + region.getId() + ". " + deposit.errorMessage);
+                } else {
+                    getLogger().log(Level.INFO, owner.getName() + "/" + ownerId + " received " + deposit.amount + " from sale of region " + region.getId() + ".");
                 }
 
                 String message = getLang("buy.your-plot-sold",
