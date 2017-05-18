@@ -31,9 +31,9 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class SignListener implements Listener {
     private final PlotSigns plugin;
@@ -157,9 +157,8 @@ public class SignListener implements Listener {
                 return false;
             }
         } else {
-            List<ProtectedRegion> foundRegions = plugin.getWorldGuard().getRegionManager(block.getWorld())
-                    .getApplicableRegions(block.getLocation()).getRegions()
-                    .stream().filter(r -> r.getFlag(DefaultFlag.BUYABLE) != null).collect(Collectors.toList());
+            List<ProtectedRegion> foundRegions = new ArrayList<>(plugin.getWorldGuard().getRegionManager(block.getWorld())
+                    .getApplicableRegions(block.getLocation()).getRegions());
             if (foundRegions.size() > 1) {
                 foundRegions.sort((r1, r2) -> Integer.compare(r2.getPriority(),r1.getPriority()));
             }
