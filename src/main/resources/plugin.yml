@@ -23,11 +23,20 @@ permissions:
    plotsigns.command.sell:
       description: Gives permission to sell regions via the command
       default: op
+   plotsigns.command.sell.others:
+      description: Gives permission to sell regions of other players
+      default: op
    plotsigns.command.type:
       description: Gives permission to set the type of a region via the command
       default: op
+   plotsigns.command.type.others:
+      description: Gives permission to set the type of regions of other players
+      default: op
    plotsigns.command.sign:
       description: Gives permission to write a sell sign via the command
+      default: op
+   plotsigns.command.sign.others:
+      description: Gives permission to write a sell sign via the command for regions of other players
       default: op
    plotsigns.command.reload:
       description: Gives permission to reload the plugin
