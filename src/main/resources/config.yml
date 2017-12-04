@@ -4,7 +4,7 @@ sign:
   - ""   # ID line
   - "&8" # Region ID line
   - ""   # Price Line
-  - "&8" #
+  - "&8" # Type
   sold:
   - "Sold"
   - "to"
