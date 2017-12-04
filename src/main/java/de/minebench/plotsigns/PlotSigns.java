@@ -43,12 +43,13 @@ public final class PlotSigns extends JavaPlugin {
     private Economy economy;
     private WorldGuardPlugin worldGuard;
     private String signSellLine;
+    private ArrayList<String> sellFormat;
 
     private Cache<UUID, String[]> writeIntents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
     private Cache<UUID, List<String>> messageIntents = CacheBuilder.newBuilder().maximumSize(1000).build();
 
     public static final StringFlag PLOT_TYPE_FLAG = new StringFlag("plot-type");
-
+    
     @Override
     public void onLoad() {
         worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
@@ -96,6 +97,16 @@ public final class PlotSigns extends JavaPlugin {
         saveDefaultConfig();
         reloadConfig();
         signSellLine = getConfig().getString("sign.sell");
+        sellFormat = new ArrayList<>();
+        for (String line : getConfig().getStringList("sign.sellformat")) {
+            String format = ChatColor.translateAlternateColorCodes('&', line);
+            if (ChatColor.stripColor(format).isEmpty()) {
+                sellFormat.add(format);
+            } else {
+                sellFormat.add("");
+                getLogger().log(Level.SEVERE, "Format strings can only contain color/formatting codes! '" + line + "' contains '" + ChatColor.stripColor(format) + "'!");
+            }
+        }
     }
 
     /**
@@ -254,14 +265,14 @@ public final class PlotSigns extends JavaPlugin {
     public void removeWriteIntent(UUID playerId) {
         writeIntents.invalidate(playerId);
     }
-
+    
     /**
      * Get the lines that should go onto a sign for a specific region
      * @param region The region to sell
      * @return An array with the length 4 with the lines
      * @throws IllegalArgumentException when the region doesn't have a price set
      */
-    public String[] getSignLines(ProtectedRegion region) throws IllegalArgumentException{
+    public String[] getSignLines(ProtectedRegion region) throws IllegalArgumentException {
         if (region.getFlag(DefaultFlag.PRICE) == null) {
             throw new IllegalArgumentException("The region " + region.getId() + " does not have the price flag set?");
         }
@@ -270,7 +281,10 @@ public final class PlotSigns extends JavaPlugin {
         lines[1] = region.getId();
         lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
         lines[3] = region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null ? region.getFlag(PlotSigns.PLOT_TYPE_FLAG) : "";
-
+        
+        for (int i = 0; i < getSellFormat().size() && i < lines.length; i++) {
+            lines[1] = getSellFormat().get(i) + lines[i];
+        }
         return lines;
     }
 
@@ -293,7 +307,11 @@ public final class PlotSigns extends JavaPlugin {
     public String getSellLine() {
         return signSellLine;
     }
-
+    
+    public ArrayList<String> getSellFormat() {
+        return sellFormat;
+    }
+    
     public class BuyException extends Exception {
         public BuyException(String message) {
             super(message);

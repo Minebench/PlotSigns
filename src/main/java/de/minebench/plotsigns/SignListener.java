@@ -78,10 +78,10 @@ public class SignListener implements Listener {
                 return;
             }
 
-            ProtectedRegion region = plugin.getWorldGuard().getRegionManager(event.getClickedBlock().getWorld()).getRegion(sign.getLine(1));
+            ProtectedRegion region = plugin.getWorldGuard().getRegionManager(event.getClickedBlock().getWorld()).getRegion(ChatColor.stripColor(sign.getLine(1)));
 
             if (region == null) {
-                event.getPlayer().sendMessage(plugin.getLang("error.unknown-region", "region", sign.getLine(1)));
+                event.getPlayer().sendMessage(plugin.getLang("error.unknown-region", "region", ChatColor.stripColor(sign.getLine(1))));
                 return;
             }
 
@@ -92,7 +92,7 @@ public class SignListener implements Listener {
 
             double price = 0.0;
             try {
-                price = Double.parseDouble(sign.getLine(2));
+                price = Double.parseDouble(ChatColor.stripColor(sign.getLine(2)));
             } catch (NumberFormatException e) {
                 event.getPlayer().sendMessage(plugin.getLang("error.malformed-price", "input", sign.getLine(2)));
                 return;
@@ -104,15 +104,15 @@ public class SignListener implements Listener {
                 return;
             }
 
-            String perm = sign.getLine(3);
-            if (region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null && !region.getFlag(PlotSigns.PLOT_TYPE_FLAG).equals(perm)) {
-                plugin.getLogger().log(Level.WARNING, "The permissions of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + perm + ", WorldGuard price flag: " + region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
-                event.getPlayer().sendMessage(plugin.getLang("buy.right-mismatch", "sign", perm, "region", region.getFlag(PlotSigns.PLOT_TYPE_FLAG)));
+            String type = ChatColor.stripColor(sign.getLine(3));
+            if (region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null && !region.getFlag(PlotSigns.PLOT_TYPE_FLAG).equals(type)) {
+                plugin.getLogger().log(Level.WARNING, "The permissions of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + type + ", WorldGuard price flag: " + region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
+                event.getPlayer().sendMessage(plugin.getLang("buy.right-mismatch", "sign", type, "region", region.getFlag(PlotSigns.PLOT_TYPE_FLAG)));
                 return;
             }
 
             try {
-                plugin.buyRegion(event.getPlayer(), region, price, perm);
+                plugin.buyRegion(event.getPlayer(), region, price, type);
                 event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId(), "price", String.valueOf(price)));
 
                 List<String> soldLines = plugin.getConfig().getStringList("sign.sold");
@@ -223,10 +223,8 @@ public class SignListener implements Listener {
             player.sendMessage(ChatColor.RED + e.getMessage());
             return false;
         }
-
-        lines[1] = region.getId();
-        lines[2] = String.valueOf(price);
-        lines[3] = type;
+    
+        System.arraycopy(plugin.getSignLines(region), 0, lines, 0, 4);
 
         player.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "type", type));
         return true;

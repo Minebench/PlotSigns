@@ -1,5 +1,10 @@
 sign:
   sell: [Plot]
+  sellformat:
+  - ""   # ID line
+  - "&8" # Region ID line
+  - ""   # Price Line
+  - "&8" #
   sold:
   - "Sold"
   - "to"
