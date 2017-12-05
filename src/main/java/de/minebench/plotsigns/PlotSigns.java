@@ -283,7 +283,7 @@ public final class PlotSigns extends JavaPlugin {
         lines[3] = region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null ? region.getFlag(PlotSigns.PLOT_TYPE_FLAG) : "";
         
         for (int i = 0; i < getSellFormat().size() && i < lines.length; i++) {
-            lines[1] = getSellFormat().get(i) + lines[i];
+            lines[i] = getSellFormat().get(i) + lines[i];
         }
         return lines;
     }
