@@ -18,10 +18,15 @@ package de.minebench.plotsigns;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.protection.flags.BooleanFlag;
+import com.sk89q.worldguard.protection.flags.DoubleFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
+import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
@@ -41,35 +46,33 @@ import java.util.logging.Level;
 public final class PlotSigns extends JavaPlugin {
 
     private Economy economy;
-    private WorldGuardPlugin worldGuard;
     private String signSellLine;
     private ArrayList<String> sellFormat;
 
     private Cache<UUID, String[]> writeIntents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
     private Cache<UUID, List<String>> messageIntents = CacheBuilder.newBuilder().maximumSize(1000).build();
 
-    public static final StringFlag PLOT_TYPE_FLAG = new StringFlag("plot-type");
-    
+    public static StringFlag PLOT_TYPE_FLAG = new StringFlag("plot-type");
+    public static BooleanFlag BUYABLE_FLAG = new BooleanFlag("buyable");
+    public static DoubleFlag PRICE_FLAG = new DoubleFlag("price");
+
     @Override
     public void onLoad() {
-        worldGuard = (WorldGuardPlugin) getServer().getPluginManager().getPlugin("WorldGuard");
-        if (worldGuard == null) {
-            getLogger().log(Level.SEVERE, "You don't seem to have WorldGuard installed? The plugin will not run without it!");
-            return;
-        }
+        PLOT_TYPE_FLAG = registerOrgetFlag(PLOT_TYPE_FLAG);
+        BUYABLE_FLAG = registerOrgetFlag(BUYABLE_FLAG);
+        PRICE_FLAG = registerOrgetFlag(PRICE_FLAG);
+    }
+
+    private <T extends Flag> T registerOrgetFlag(T flag) {
         try {
-            worldGuard.getFlagRegistry().register(PLOT_TYPE_FLAG);
-        } catch (FlagConflictException e) {
-            getLogger().log(Level.WARNING, "Error while registering the plot type flag: " + e.getMessage());
+            return Flags.register(flag);
+        } catch (FlagConflictException | IllegalStateException e) {
+            return (T) Flags.get(flag.getName());
         }
     }
 
     @Override
     public void onEnable() {
-        if (worldGuard == null) {
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
         loadConfig();
         if (!setupEconomy()) {
             getLogger().log(Level.SEVERE, "Failed to hook into Vault! The plugin will not run without it!");
@@ -121,9 +124,9 @@ public final class PlotSigns extends JavaPlugin {
             throw new IllegalArgumentException("Type string can't be longer than 15 chars! (It might not fit on a sign)");
         if (region.getId().length() > 15)
             throw new IllegalArgumentException("The region's ID can't be longer than 15 chars! (It might not fit on a sign)");
-        region.setFlag(DefaultFlag.BUYABLE, true);
-        region.setFlag(DefaultFlag.PRICE, price);
-        region.setFlag(PlotSigns.PLOT_TYPE_FLAG, type == null || type.isEmpty() ? null : type);
+        region.setFlag(BUYABLE_FLAG, true);
+        region.setFlag(PRICE_FLAG, price);
+        region.setFlag(PLOT_TYPE_FLAG, type == null || type.isEmpty() ? null : type);
     }
 
     /**
@@ -135,7 +138,7 @@ public final class PlotSigns extends JavaPlugin {
      * @throws BuyException if the player can't buy the region for whatever reason
      */
     public void buyRegion(Player player, ProtectedRegion region, double price, String type) throws BuyException {
-        if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE)) {
+        if (region.getFlag(BUYABLE_FLAG) == null || !region.getFlag(BUYABLE_FLAG)) {
             throw new BuyException(getLang("buy.not-for-sale", "region", region.getId()));
         }
 
@@ -184,9 +187,9 @@ public final class PlotSigns extends JavaPlugin {
             }
         }
 
-        region.setFlag(DefaultFlag.BUYABLE, false);
-        if (region.getFlag(DefaultFlag.PRICE) == null) {
-            region.setFlag(DefaultFlag.PRICE, price);
+        region.setFlag(BUYABLE_FLAG, false);
+        if (region.getFlag(PRICE_FLAG) == null) {
+            region.setFlag(PRICE_FLAG, price);
         }
         if (region.getFlag(PLOT_TYPE_FLAG) == null && type != null && !type.isEmpty()) {
             region.setFlag(PLOT_TYPE_FLAG, type);
@@ -216,8 +219,12 @@ public final class PlotSigns extends JavaPlugin {
             return false;
         }
 
+        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(world));
+        if (rm == null) {
+            return false;
+        }
         int count = 0;
-        for (ProtectedRegion region : getWorldGuard().getRegionManager(world).getRegions().values()) {
+        for (ProtectedRegion region : rm.getRegions().values()) {
             if (region.getOwners().contains(player.getUniqueId()) && region.getFlag(PLOT_TYPE_FLAG) != null && type.equals(region.getFlag(PLOT_TYPE_FLAG))) {
                 count++;
                 if (count >= maxAmount) {
@@ -273,14 +280,14 @@ public final class PlotSigns extends JavaPlugin {
      * @throws IllegalArgumentException when the region doesn't have a price set
      */
     public String[] getSignLines(ProtectedRegion region) throws IllegalArgumentException {
-        if (region.getFlag(DefaultFlag.PRICE) == null) {
+        if (region.getFlag(PRICE_FLAG) == null) {
             throw new IllegalArgumentException("The region " + region.getId() + " does not have the price flag set?");
         }
         String[] lines = new String[4];
         lines[0] = getSellLine();
         lines[1] = region.getId();
-        lines[2] = String.valueOf(region.getFlag(DefaultFlag.PRICE));
-        lines[3] = region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null ? region.getFlag(PlotSigns.PLOT_TYPE_FLAG) : "";
+        lines[2] = String.valueOf(region.getFlag(PRICE_FLAG));
+        lines[3] = region.getFlag(PLOT_TYPE_FLAG) != null ? region.getFlag(PLOT_TYPE_FLAG) : "";
         
         for (int i = 0; i < getSellFormat().size() && i < lines.length; i++) {
             lines[i] = getSellFormat().get(i) + lines[i];
@@ -294,10 +301,6 @@ public final class PlotSigns extends JavaPlugin {
             message = message.replace("%" + args[i] + "%", args[i+1] != null ? args[i+1] : "null");
         }
         return ChatColor.translateAlternateColorCodes('&', message);
-    }
-
-    public WorldGuardPlugin getWorldGuard() {
-        return worldGuard;
     }
 
     public Economy getEconomy() {

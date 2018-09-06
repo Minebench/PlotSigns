@@ -16,10 +16,13 @@ package de.minebench.plotsigns;
  * along with this program. If not, see <http://mozilla.org/MPL/2.0/>.
  */
 
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -55,13 +58,20 @@ public class PlotSignsCommand implements CommandExecutor {
 
                     ProtectedRegion region = null;
 
+                    RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((Player) sender).getWorld()));
+                    if (rm == null) {
+                        sender.sendMessage(plugin.getLang("error.world-not-supported", "world", ((Player) sender).getWorld().getName()));
+                        return true;
+                    }
+
                     if (args.length > 1 && sender.hasPermission("plotsigns.command.buy.byregionid")) {
-                        region = plugin.getWorldGuard().getRegionManager(((Player) sender).getWorld()).getRegion(args[1]);
+                        region = rm.getRegion(args[1]);
                         if (region == null) {
                             sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         }
                     } else {
-                        List<ProtectedRegion> regions = new ArrayList<>(plugin.getWorldGuard().getRegionManager(((Player) sender).getWorld()).getApplicableRegions(((Player) sender).getLocation()).getRegions());
+                        Location l = ((Player) sender).getLocation();
+                        List<ProtectedRegion> regions = new ArrayList<>(rm.getApplicableRegions(new Vector(l.getX(), l.getY(), l.getZ())).getRegions());
                         if (regions.size() > 0) {
                             regions.sort((r1, r2) -> Integer.compare(r2.getPriority(), r1.getPriority()));
                             region = regions.get(0);
@@ -75,13 +85,13 @@ public class PlotSignsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE) || region.getFlag(DefaultFlag.PRICE) == null) {
+                    if (region.getFlag(PlotSigns.BUYABLE_FLAG) == null || !region.getFlag(PlotSigns.BUYABLE_FLAG) || region.getFlag(PlotSigns.PRICE_FLAG) == null) {
                         sender.sendMessage(plugin.getLang("buy.not-for-sale", "region", region.getId()));
                         return true;
                     }
 
                     try {
-                        plugin.buyRegion((Player) sender, region, region.getFlag(DefaultFlag.PRICE), region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
+                        plugin.buyRegion((Player) sender, region, region.getFlag(PlotSigns.PRICE_FLAG), region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
                         sender.sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
                     } catch (PlotSigns.BuyException e) {
                         sender.sendMessage(ChatColor.RED + "Error while trying to buy the region " + region.getId() + "! " + e.getMessage());
@@ -136,7 +146,7 @@ public class PlotSignsCommand implements CommandExecutor {
                     }
 
                     try {
-                        Double price = region.getFlag(DefaultFlag.PRICE);
+                        Double price = region.getFlag(PlotSigns.PRICE_FLAG);
                         if (price == null) {
                             sender.sendMessage(plugin.getLang("create-sign.region-not-sellable", "region", region.getId()));
                             return true;
@@ -171,7 +181,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         return true;
                     }
 
-                    if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE) || region.getFlag(DefaultFlag.PRICE) == null) {
+                    if (region.getFlag(PlotSigns.BUYABLE_FLAG) == null || !region.getFlag(PlotSigns.BUYABLE_FLAG) || region.getFlag(PlotSigns.PRICE_FLAG) == null) {
                         sender.sendMessage(plugin.getLang("create-sign.region-not-sellable", "region", region.getId()));
                         return true;
                     }
@@ -194,11 +204,11 @@ public class PlotSignsCommand implements CommandExecutor {
     private ProtectedRegion getRegion(CommandSender sender, String id) {
         RegionManager regionManager;
         if (sender instanceof Entity) {
-            regionManager = plugin.getWorldGuard().getRegionManager(((Entity) sender).getWorld());
+            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((Entity) sender).getWorld()));
         } else if (sender instanceof BlockCommandSender) {
-            regionManager = plugin.getWorldGuard().getRegionManager(((BlockCommandSender) sender).getBlock().getWorld());
+            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((BlockCommandSender) sender).getBlock().getWorld()));
         } else {
-            for (RegionManager rm : plugin.getWorldGuard().getRegionContainer().getLoaded()) {
+            for (RegionManager rm : WorldGuard.getInstance().getPlatform().getRegionContainer().getLoaded()) {
                 ProtectedRegion region = rm.getRegion(id);
                 if (region != null) {
                     return region;

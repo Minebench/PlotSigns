@@ -17,10 +17,13 @@ package de.minebench.plotsigns;
  */
 
 import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -78,14 +81,20 @@ public class SignListener implements Listener {
                 return;
             }
 
-            ProtectedRegion region = plugin.getWorldGuard().getRegionManager(event.getClickedBlock().getWorld()).getRegion(ChatColor.stripColor(sign.getLine(1)));
+            RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(event.getClickedBlock().getWorld()));
+            if (rm == null) {
+                event.getPlayer().sendMessage(plugin.getLang("error.world-not-supported", "world", event.getClickedBlock().getWorld().getName()));
+                return;
+            }
+
+            ProtectedRegion region = rm.getRegion(ChatColor.stripColor(sign.getLine(1)));
 
             if (region == null) {
                 event.getPlayer().sendMessage(plugin.getLang("error.unknown-region", "region", ChatColor.stripColor(sign.getLine(1))));
                 return;
             }
 
-            if (region.getFlag(DefaultFlag.BUYABLE) == null || !region.getFlag(DefaultFlag.BUYABLE)) {
+            if (region.getFlag(PlotSigns.BUYABLE_FLAG) == null || !region.getFlag(PlotSigns.BUYABLE_FLAG)) {
                 event.getPlayer().sendMessage(plugin.getLang("buy.not-for-sale", "region", region.getId()));
                 return;
             }
@@ -98,9 +107,13 @@ public class SignListener implements Listener {
                 return;
             }
 
-            if (region.getFlag(DefaultFlag.PRICE) != null && price != region.getFlag(DefaultFlag.PRICE)) {
-                plugin.getLogger().log(Level.WARNING, "The prices of the region " + region.getId() + " that " + event.getPlayer().getName() + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match! Sign: " + price + ", WorldGuard price flag: " + region.getFlag(DefaultFlag.PRICE));
-                event.getPlayer().sendMessage(plugin.getLang("buy.price-mismatch", "sign", String.valueOf(price), "region", String.valueOf(region.getFlag(DefaultFlag.PRICE))));
+            if (region.getFlag(PlotSigns.PRICE_FLAG) != null && price != region.getFlag(PlotSigns.PRICE_FLAG)) {
+                plugin.getLogger().log(Level.WARNING, "The prices of the region " + region.getId() + " that " + event.getPlayer().getName()
+                        + " tries to buy via the sign at " + event.getClickedBlock().getLocation() + " didn't match!" +
+                        " Sign: " + price + ", WorldGuard price flag: " + region.getFlag(PlotSigns.PRICE_FLAG));
+                event.getPlayer().sendMessage(plugin.getLang("buy.price-mismatch",
+                        "sign", String.valueOf(price),
+                        "region", String.valueOf(region.getFlag(PlotSigns.PRICE_FLAG))));
                 return;
             }
 
@@ -144,21 +157,22 @@ public class SignListener implements Listener {
             return false;
         }
 
+        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(block.getWorld()));
+        if (rm == null) {
+            player.sendMessage(plugin.getLang("error.world-not-supported", "world", block.getWorld().getName()));
+            return false;
+        }
+
         ProtectedRegion region;
         if (!lines[1].isEmpty()) {
-            RegionManager rm = plugin.getWorldGuard().getRegionManager(block.getWorld());
-            if (rm == null) {
-                player.sendMessage(plugin.getLang("error.world-not-supported"));
-                return false;
-            }
             region = rm.getRegion(lines[1]);
             if (region == null) {
                 player.sendMessage(plugin.getLang("error.unknown-region", "region", lines[1]));
                 return false;
             }
         } else {
-            List<ProtectedRegion> foundRegions = new ArrayList<>(plugin.getWorldGuard().getRegionManager(block.getWorld())
-                    .getApplicableRegions(block.getLocation()).getRegions());
+            Location l = block.getLocation();
+            List<ProtectedRegion> foundRegions = new ArrayList<>(rm.getApplicableRegions(new Vector(l.getX(), l.getY(), l.getZ())).getRegions());
             if (foundRegions.size() > 1) {
                 foundRegions.sort((r1, r2) -> Integer.compare(r2.getPriority(),r1.getPriority()));
             }
@@ -183,15 +197,15 @@ public class SignListener implements Listener {
             }
         }
 
-        if (!player.hasPermission("plotsigns.sign.create.makebuyable") && region.getFlag(DefaultFlag.BUYABLE) == null) {
+        if (!player.hasPermission("plotsigns.sign.create.makebuyable") && region.getFlag(PlotSigns.BUYABLE_FLAG) == null) {
             player.sendMessage(plugin.getLang("create-sign.region-not-sellable", "region", region.getId()));
             return false;
         }
 
         double price = 0;
         if (lines[2].isEmpty()) {
-            if (region.getFlag(DefaultFlag.PRICE) != null) {
-                price = region.getFlag(DefaultFlag.PRICE);
+            if (region.getFlag(PlotSigns.PRICE_FLAG) != null) {
+                price = region.getFlag(PlotSigns.PRICE_FLAG);
             } else {
                 player.sendMessage(plugin.getLang("create-sign.missing-price"));
                 return false;

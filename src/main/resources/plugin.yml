@@ -3,6 +3,7 @@ version: '${minecraft.plugin.version}'
 main: de.minebench.plotsigns.PlotSigns
 depend: [WorldGuard]
 authors: [Phoenix616]
+api-version: "1.13"
 commands:
    plotsigns:
       aliases: [plotsign,land]
