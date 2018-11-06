@@ -18,13 +18,13 @@ package de.minebench.plotsigns;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.util.Location;
+import com.sk89q.worldedit.world.World;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -60,7 +60,8 @@ public class PlotSignsCommand implements CommandExecutor {
 
                     ProtectedRegion region = null;
 
-                    RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((Player) sender).getWorld()));
+                    Location l = BukkitAdapter.adapt(((Player) sender).getLocation());
+                    RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get((World) l.getExtent());
                     if (rm == null) {
                         sender.sendMessage(plugin.getLang("error.world-not-supported", "world", ((Player) sender).getWorld().getName()));
                         return true;
@@ -72,8 +73,7 @@ public class PlotSignsCommand implements CommandExecutor {
                             sender.sendMessage(plugin.getLang("error.unknown-region", "region", args[1]));
                         }
                     } else {
-                        Location l = ((Player) sender).getLocation();
-                        List<ProtectedRegion> regions = new ArrayList<>(rm.getApplicableRegions(new Vector(l.getX(), l.getY(), l.getZ())).getRegions());
+                        List<ProtectedRegion> regions = new ArrayList<>(rm.getApplicableRegions(l.toVector().toBlockPoint()).getRegions());
                         if (regions.size() > 0) {
                             regions.sort((r1, r2) -> Integer.compare(r2.getPriority(), r1.getPriority()));
                             region = regions.get(0);
@@ -206,9 +206,9 @@ public class PlotSignsCommand implements CommandExecutor {
     private ProtectedRegion getRegion(CommandSender sender, String id) {
         RegionManager regionManager;
         if (sender instanceof Entity) {
-            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((Entity) sender).getWorld()));
+            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(((Entity) sender).getWorld()));
         } else if (sender instanceof BlockCommandSender) {
-            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(((BlockCommandSender) sender).getBlock().getWorld()));
+            regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(((BlockCommandSender) sender).getBlock().getWorld()));
         } else {
             for (RegionManager rm : WorldGuard.getInstance().getPlatform().getRegionContainer().getLoaded()) {
                 ProtectedRegion region = rm.getRegion(id);

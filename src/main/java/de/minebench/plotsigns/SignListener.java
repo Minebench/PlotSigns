@@ -18,14 +18,12 @@ package de.minebench.plotsigns;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.bukkit.BukkitWorld;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -83,7 +81,7 @@ public class SignListener implements Listener {
                 return;
             }
 
-            RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(event.getClickedBlock().getWorld()));
+            RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(event.getClickedBlock().getWorld()));
             if (rm == null) {
                 event.getPlayer().sendMessage(plugin.getLang("error.world-not-supported", "world", event.getClickedBlock().getWorld().getName()));
                 return;
@@ -159,7 +157,8 @@ public class SignListener implements Listener {
             return false;
         }
 
-        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(new BukkitWorld(block.getWorld()));
+        Location l = BukkitAdapter.adapt(block.getLocation());
+        RegionManager rm = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(block.getWorld()));
         if (rm == null) {
             player.sendMessage(plugin.getLang("error.world-not-supported", "world", block.getWorld().getName()));
             return false;
@@ -173,8 +172,7 @@ public class SignListener implements Listener {
                 return false;
             }
         } else {
-            Location l = block.getLocation();
-            List<ProtectedRegion> foundRegions = new ArrayList<>(rm.getApplicableRegions(new Vector(l.getX(), l.getY(), l.getZ())).getRegions());
+            List<ProtectedRegion> foundRegions = new ArrayList<>(rm.getApplicableRegions(l.toVector().toBlockPoint()).getRegions());
             if (foundRegions.size() > 1) {
                 foundRegions.sort((r1, r2) -> Integer.compare(r2.getPriority(),r1.getPriority()));
             }
@@ -192,8 +190,7 @@ public class SignListener implements Listener {
         }
 
         if (!player.hasPermission("plotsigns.sign.create.outside")) {
-            BlockVector loc = new BlockVector(block.getX(), block.getY(), block.getZ());
-            if (!region.contains(loc)) {
+            if (!region.contains(l.toVector().toBlockPoint())) {
                 player.sendMessage(plugin.getLang("create-sign.sign-outside-region"));
                 return false;
             }
