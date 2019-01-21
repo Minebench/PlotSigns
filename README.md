@@ -9,7 +9,7 @@ Players can sell their own plots too if they have the permissions to do so (each
 
 You can sell a region just by placing down signs with a certain sell tag on the first line. (`[Plot]` in the default config's `sign.sell` key) The second line contains the region's id, the third one the price and the fourth the plot's type. (Leave empty if it shouldn't have one)
 
-![PlotSigns sign explanation](https://xn--wxa.pw/TIW.png) ![PlotSigns sign example](https://xn--wxa.pw/V1j.png)
+![PlotSigns sign explanation](https://lambda.sx/TIW.png) ![PlotSigns sign example](https://lambda.sx/V1j.png)
 
 ## Commands
 
