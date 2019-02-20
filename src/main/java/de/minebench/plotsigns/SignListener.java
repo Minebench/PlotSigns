@@ -165,10 +165,11 @@ public class SignListener implements Listener {
         }
 
         ProtectedRegion region;
-        if (!lines[1].isEmpty()) {
-            region = rm.getRegion(lines[1]);
+        String regionLine = ChatColor.stripColor(lines[1]).trim();
+        if (!regionLine.isEmpty()) {
+            region = rm.getRegion(regionLine);
             if (region == null) {
-                player.sendMessage(plugin.getLang("error.unknown-region", "region", lines[1]));
+                player.sendMessage(plugin.getLang("error.unknown-region", "region", regionLine));
                 return false;
             }
         } else {
@@ -201,8 +202,9 @@ public class SignListener implements Listener {
             return false;
         }
 
+        String priceLine = ChatColor.stripColor(lines[2].trim());
         double price = 0;
-        if (lines[2].isEmpty()) {
+        if (priceLine.isEmpty()) {
             if (region.getFlag(PlotSigns.PRICE_FLAG) != null) {
                 price = region.getFlag(PlotSigns.PRICE_FLAG);
             } else {
@@ -211,20 +213,21 @@ public class SignListener implements Listener {
             }
         } else {
             try {
-                price = Double.parseDouble(lines[2]);
+                price = Double.parseDouble(priceLine);
             } catch (NumberFormatException e) {
-                player.sendMessage(plugin.getLang("error.malformed-price", "input", lines[2]));
+                player.sendMessage(plugin.getLang("error.malformed-price", "input", priceLine));
                 return false;
             }
         }
 
+        String typeLine = ChatColor.stripColor(lines[3].trim());
         String type = "";
         if (region.getFlag(PlotSigns.PLOT_TYPE_FLAG) != null) {
             type = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
         }
-        if (!lines[3].isEmpty()) {
+        if (!typeLine.isEmpty()) {
             if (player.hasPermission("plotsigns.sign.create.type")) {
-                type = lines[3];
+                type = typeLine;
             } else {
                 player.sendMessage(plugin.getLang("create-sign.cant-set-type"));
             }
