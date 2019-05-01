@@ -60,14 +60,15 @@ public final class PlotSigns extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        PLOT_TYPE_FLAG = registerOrgetFlag(PLOT_TYPE_FLAG);
-        BUYABLE_FLAG = registerOrgetFlag(BUYABLE_FLAG);
-        PRICE_FLAG = registerOrgetFlag(PRICE_FLAG);
+        PLOT_TYPE_FLAG = registerOrGetFlag(PLOT_TYPE_FLAG);
+        BUYABLE_FLAG = registerOrGetFlag(BUYABLE_FLAG);
+        PRICE_FLAG = registerOrGetFlag(PRICE_FLAG);
     }
 
-    private <T extends Flag> T registerOrgetFlag(T flag) {
+    private <T extends Flag> T registerOrGetFlag(T flag) {
         try {
-            return Flags.register(flag);
+            WorldGuard.getInstance().getFlagRegistry().register(flag);
+            return flag;
         } catch (FlagConflictException | IllegalStateException e) {
             return (T) Flags.get(flag.getName());
         }
