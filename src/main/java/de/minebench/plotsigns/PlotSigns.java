@@ -25,7 +25,6 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.BooleanFlag;
 import com.sk89q.worldguard.protection.flags.DoubleFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.flags.StringFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.managers.RegionManager;
@@ -70,7 +69,7 @@ public final class PlotSigns extends JavaPlugin {
             WorldGuard.getInstance().getFlagRegistry().register(flag);
             return flag;
         } catch (FlagConflictException | IllegalStateException e) {
-            return (T) Flags.get(flag.getName());
+            return (T) WorldGuard.getInstance().getFlagRegistry().get(flag.getName());
         }
     }
 
