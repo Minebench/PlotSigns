@@ -49,6 +49,11 @@ You can sell a region just by placing down signs with a certain sell tag on the 
 ```yaml
 sign:
   sell: [Plot]
+  sellformat:
+  - ""   # ID line
+  - "&8" # Region ID line
+  - ""   # Price Line
+  - "&8" # Type
   sold:
   - "Sold"
   - "to"
@@ -96,17 +101,18 @@ Releases can be downloaded from the [PlotSigns SpigotMC resource page](https://w
 ## License
 
 ```
-Copyright 2016 Max Lee (https://github.com/Phoenix616/)
+Copyright (C) 2020 Max Lee aka Phoenix616 (max@themoep.de)
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the Mozilla Public License as published by
-the Mozilla Foundation, version 2.
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-Mozilla Public License v2.0 for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the Mozilla Public License v2.0
-along with this program. If not, see <http://mozilla.org/MPL/2.0/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ```
