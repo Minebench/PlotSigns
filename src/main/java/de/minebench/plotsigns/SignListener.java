@@ -72,7 +72,7 @@ public class SignListener implements Listener {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ChatColor.GREEN + "Sign successfully written!");
 
-        } else if (sign.getLines().length > 2 && sign.getLine(0).equalsIgnoreCase(plugin.getSellLine())) {
+        } else if (sign.getLines().length > 2 && ChatColor.stripColor(sign.getLine(0)).equalsIgnoreCase(plugin.getSellLine())) {
             // Buy plot
             event.setCancelled(true);
 
