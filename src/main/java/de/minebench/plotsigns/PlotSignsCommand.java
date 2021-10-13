@@ -102,6 +102,7 @@ public class PlotSignsCommand implements CommandExecutor {
                 } else {
                     sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " [<region>]");
                 }
+                return true;
 
             } else if ("sell".equalsIgnoreCase(args[0]) || "verkaufen".equalsIgnoreCase(args[0]) && sender.hasPermission("plotsigns.command.sell")) {
                 // legacy sub command, you can write the signs directly
