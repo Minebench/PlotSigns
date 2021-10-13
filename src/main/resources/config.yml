@@ -10,6 +10,9 @@ sign:
   - "to"
   - "%player%"
   - ""
+# Whether all sell signs of a region should be updated when buying it
+# This will only update signs in loaded chunks near the region!
+update-all-sell-signs: true
 tax: # Tax to be deducted from the region's price when the region is sold to another user
   fixed: 0.0 # Fixed tax
   share: 0.0 # Share of the price. Use 1.0 to not give the owner any money at all

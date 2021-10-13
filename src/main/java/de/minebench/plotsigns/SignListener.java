@@ -25,6 +25,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,6 +34,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,7 @@ public class SignListener implements Listener {
             SignChangeEvent sce = new SignChangeEvent(event.getClickedBlock(), event.getPlayer(), lines);
             plugin.getServer().getPluginManager().callEvent(sce);
             if (!sce.isCancelled()) {
+                sign = (Sign) sce.getBlock().getState();
                 for (int i = 0; i < sce.getLines().length; i++) {
                     sign.setLine(i, sce.getLine(i));
                 }
@@ -128,11 +131,7 @@ public class SignListener implements Listener {
                 plugin.buyRegion(event.getPlayer(), region, price, type);
                 event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId(), "price", String.valueOf(price)));
 
-                List<String> soldLines = plugin.getConfig().getStringList("sign.sold");
-                for (int i = 0; i < soldLines.size(); i++) {
-                    sign.setLine(i, ChatColor.translateAlternateColorCodes('&', soldLines.get(i)).replace("%region%", region.getId()).replace("%player%", event.getPlayer().getName()));
-                }
-                sign.update();
+                plugin.setSignSold(event.getPlayer(), region, sign);
 
             } catch (PlotSigns.BuyException e) {
                 event.getPlayer().sendMessage(e.getMessage());
@@ -240,6 +239,10 @@ public class SignListener implements Listener {
 
         try {
             plugin.makeRegionBuyable(region, price, type);
+
+            if (plugin.getConfig().getBoolean("update-all-sell-signs")) {
+                plugin.updateSignsInRegion(player, region, false);
+            }
         } catch (IllegalArgumentException e) {
             player.sendMessage(ChatColor.RED + e.getMessage());
             return false;
@@ -248,6 +251,17 @@ public class SignListener implements Listener {
         System.arraycopy(plugin.getSignLines(region), 0, lines, 0, 4);
 
         player.sendMessage(plugin.getLang("create-sign.success", "region", region.getId(), "price", String.valueOf(price), "type", type));
+
+        plugin.getServer().getScheduler().runTask(
+                plugin,
+                () -> {
+                    BlockState state = block.getState();
+                    if (state instanceof Sign) {
+                        ((Sign) state).getPersistentDataContainer().set(PlotSigns.SIGN_REGION_KEY, PersistentDataType.STRING, region.getId());
+                        state.update();
+                    }
+                }
+        );
         return true;
     }
 }

@@ -32,9 +32,15 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.ChatColor;
+import org.bukkit.Chunk;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -53,12 +59,14 @@ public final class PlotSigns extends JavaPlugin {
     private Cache<UUID, String[]> writeIntents = CacheBuilder.newBuilder().expireAfterWrite(10, TimeUnit.SECONDS).build();
     private Cache<UUID, List<String>> messageIntents = CacheBuilder.newBuilder().maximumSize(1000).build();
 
+    public static NamespacedKey SIGN_REGION_KEY;
     public static StringFlag PLOT_TYPE_FLAG = new StringFlag("plot-type");
     public static BooleanFlag BUYABLE_FLAG = new BooleanFlag("buyable");
     public static DoubleFlag PRICE_FLAG = new DoubleFlag("price");
 
     @Override
     public void onLoad() {
+        SIGN_REGION_KEY = new NamespacedKey(this, "region");
         PLOT_TYPE_FLAG = registerOrGetFlag(PLOT_TYPE_FLAG);
         BUYABLE_FLAG = registerOrGetFlag(BUYABLE_FLAG);
         PRICE_FLAG = registerOrGetFlag(PRICE_FLAG);
@@ -198,6 +206,41 @@ public final class PlotSigns extends JavaPlugin {
         }
         region.getOwners().clear();
         region.getOwners().addPlayer(player.getUniqueId());
+
+        if (getConfig().getBoolean("update-all-sell-signs")) {
+            updateSignsInRegion(player, region, true);
+        }
+    }
+
+    void updateSignsInRegion(Entity entity, ProtectedRegion region, boolean sold) {
+        // Get min chunks and get some border around the region if sell signs are outside of it
+        int chunkMinX = (region.getMinimumPoint().getBlockX() >> 4) - 1;
+        int chunkMinZ = (region.getMinimumPoint().getBlockZ() >> 4) - 1;
+        int chunkMaxX = (region.getMaximumPoint().getBlockX() >> 4) + 1;
+        int chunkMaxZ = (region.getMaximumPoint().getBlockZ() >> 4) + 1;
+
+        for (int x = chunkMinX; x <= chunkMaxX; x++) {
+            for (int z = chunkMinZ; z <= chunkMaxZ; z++) {
+                if (entity.getWorld().isChunkLoaded(x, z)) {
+                    Chunk chunk = entity.getWorld().getChunkAt(x, z);
+                    for (BlockState state : chunk.getTileEntities()) {
+                        if (state instanceof Sign) {
+                            Sign sign = (Sign) state;
+                            if (sign.getPersistentDataContainer().has(SIGN_REGION_KEY, PersistentDataType.STRING)) {
+                                String regionId = sign.getPersistentDataContainer().get(SIGN_REGION_KEY, PersistentDataType.STRING);
+                                if (region.getId().equals(regionId)) {
+                                    if (sold) {
+                                        setSignSold(entity, region, sign);
+                                    } else {
+                                        setSignBuyable(region, sign);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public boolean checkTypeCount(Player player, World world, String type) {
@@ -297,6 +340,22 @@ public final class PlotSigns extends JavaPlugin {
         return lines;
     }
 
+    public void setSignBuyable(ProtectedRegion region, Sign sign) {
+        String[] signLines = getSignLines(region);
+        for (int i = 0; i < signLines.length; i++) {
+            sign.setLine(i, signLines[i]);
+        }
+        sign.update();
+    }
+
+    public void setSignSold(Entity entity, ProtectedRegion region, Sign sign) {
+        List<String> soldLines = getConfig().getStringList("sign.sold");
+        for (int i = 0; i < soldLines.size(); i++) {
+            sign.setLine(i, ChatColor.translateAlternateColorCodes('&', soldLines.get(i)).replace("%region%", region.getId()).replace("%player%", entity.getName()));
+        }
+        sign.update();
+    }
+
     public String getLang(String key, String... args) {
         String message = getConfig().getString("lang." + key, getName() + ": &cUnknown language key &6" + key + "&c!");
         for (int i = 0; i + 1 < args.length; i += 2) {
@@ -316,7 +375,7 @@ public final class PlotSigns extends JavaPlugin {
     public ArrayList<String> getSellFormat() {
         return sellFormat;
     }
-    
+
     public class BuyException extends Exception {
         public BuyException(String message) {
             super(message);
