@@ -93,8 +93,9 @@ public class PlotSignsCommand implements CommandExecutor {
                     }
 
                     try {
-                        plugin.buyRegion((Player) sender, region, region.getFlag(PlotSigns.PRICE_FLAG), region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
-                        sender.sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId()));
+                        double price = region.getFlag(PlotSigns.PRICE_FLAG);
+                        plugin.buyRegion((Player) sender, region, price, region.getFlag(PlotSigns.PLOT_TYPE_FLAG));
+                        sender.sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId(), "price", String.valueOf(price)));
                     } catch (PlotSigns.BuyException e) {
                         sender.sendMessage(ChatColor.RED + "Error while trying to buy the region " + region.getId() + "! " + e.getMessage());
                     }
