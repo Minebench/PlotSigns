@@ -219,6 +219,13 @@ public final class PlotSigns extends JavaPlugin {
         int chunkMaxX = (region.getMaximumPoint().getBlockX() >> 4) + 1;
         int chunkMaxZ = (region.getMaximumPoint().getBlockZ() >> 4) + 1;
 
+        String[] signLines;
+        if (sold) {
+            signLines = getSignLinesSold(entity, region);
+        } else {
+            signLines = getSignLines(region);
+        }
+
         for (int x = chunkMinX; x <= chunkMaxX; x++) {
             for (int z = chunkMinZ; z <= chunkMaxZ; z++) {
                 if (entity.getWorld().isChunkLoaded(x, z)) {
@@ -229,11 +236,10 @@ public final class PlotSigns extends JavaPlugin {
                             if (sign.getPersistentDataContainer().has(SIGN_REGION_KEY, PersistentDataType.STRING)) {
                                 String regionId = sign.getPersistentDataContainer().get(SIGN_REGION_KEY, PersistentDataType.STRING);
                                 if (region.getId().equals(regionId)) {
-                                    if (sold) {
-                                        setSignSold(entity, region, sign);
-                                    } else {
-                                        setSignBuyable(region, sign);
+                                    for (int i = 0; i < signLines.length; i++) {
+                                        sign.setLine(i, signLines[i]);
                                     }
+                                    sign.update();
                                 }
                             }
                         }
@@ -340,20 +346,20 @@ public final class PlotSigns extends JavaPlugin {
         return lines;
     }
 
-    public void setSignBuyable(ProtectedRegion region, Sign sign) {
-        String[] signLines = getSignLines(region);
-        for (int i = 0; i < signLines.length; i++) {
-            sign.setLine(i, signLines[i]);
-        }
-        sign.update();
-    }
+    public String[] getSignLinesSold(Entity entity, ProtectedRegion region) {
+        String[] lines = new String[4];
+        List<String> configLines = getConfig().getStringList("sign.sold");
 
-    public void setSignSold(Entity entity, ProtectedRegion region, Sign sign) {
-        List<String> soldLines = getConfig().getStringList("sign.sold");
-        for (int i = 0; i < soldLines.size(); i++) {
-            sign.setLine(i, ChatColor.translateAlternateColorCodes('&', soldLines.get(i)).replace("%region%", region.getId()).replace("%player%", entity.getName()));
+        for (int i = 0; i < lines.length; i++) {
+            if (i < configLines.size()) {
+                lines[i] = ChatColor.translateAlternateColorCodes('&',configLines.get(i))
+                        .replace("%region%", region.getId())
+                        .replace("%player%", entity.getName());
+            } else {
+                lines[i] = "";
+            }
         }
-        sign.update();
+        return lines;
     }
 
     public String getLang(String key, String... args) {

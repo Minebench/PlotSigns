@@ -90,7 +90,17 @@ public class SignListener implements Listener {
                 return;
             }
 
-            ProtectedRegion region = rm.getRegion(ChatColor.stripColor(sign.getLine(1)));
+            String regionId = null;
+            if (sign.getPersistentDataContainer().has(PlotSigns.SIGN_REGION_KEY, PersistentDataType.STRING)) {
+                regionId = sign.getPersistentDataContainer().get(PlotSigns.SIGN_REGION_KEY, PersistentDataType.STRING);
+            }
+
+            // Fallback to sign parsing if ID isn't found
+            if (regionId == null) {
+                regionId = ChatColor.stripColor(sign.getLine(1));
+            }
+
+            ProtectedRegion region = rm.getRegion(regionId);
 
             if (region == null) {
                 event.getPlayer().sendMessage(plugin.getLang("error.unknown-region", "region", ChatColor.stripColor(sign.getLine(1))));
@@ -131,7 +141,15 @@ public class SignListener implements Listener {
                 plugin.buyRegion(event.getPlayer(), region, price, type);
                 event.getPlayer().sendMessage(plugin.getLang("buy.bought-plot", "region", region.getId(), "price", String.valueOf(price)));
 
-                plugin.setSignSold(event.getPlayer(), region, sign);
+                String[] soldLines = plugin.getSignLinesSold(event.getPlayer(), region);
+                for (int i = 0; i < soldLines.length; i++) {
+                    sign.setLine(i, soldLines[i]);
+                }
+
+                if (!sign.getPersistentDataContainer().has(PlotSigns.SIGN_REGION_KEY, PersistentDataType.STRING)) {
+                    sign.getPersistentDataContainer().set(PlotSigns.SIGN_REGION_KEY, PersistentDataType.STRING, regionId);
+                }
+                sign.update();
 
             } catch (PlotSigns.BuyException e) {
                 event.getPlayer().sendMessage(e.getMessage());
