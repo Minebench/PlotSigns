@@ -163,7 +163,7 @@ public final class PlotSigns extends JavaPlugin {
             throw new BuyException(withdraw.errorMessage);
         }
 
-        getLogger().log(Level.INFO, player.getName() + "/" + player.getUniqueId() + " bought region " + region.getId() + " for " + price + (type.isEmpty() ? "" : " Type: " + type));
+        getLogger().log(Level.INFO, player.getName() + "/" + player.getUniqueId() + " bought region " + region.getId() + " for " + price + (type == null || type.isEmpty() ? "" : " Type: " + type));
 
         if (region.getOwners().size() > 0) {
             for (UUID ownerId : region.getOwners().getUniqueIds()) {
@@ -201,7 +201,7 @@ public final class PlotSigns extends JavaPlugin {
     }
 
     public boolean checkTypeCount(Player player, World world, String type) {
-        if (player.hasPermission("plotsigns.type." + type + ".unlimited") || player.hasPermission("plotsigns.group." + type + ".unlimited")) {
+        if (type == null || type.isEmpty() || player.hasPermission("plotsigns.type." + type + ".unlimited") || player.hasPermission("plotsigns.group." + type + ".unlimited")) {
             return true;
         }
 
