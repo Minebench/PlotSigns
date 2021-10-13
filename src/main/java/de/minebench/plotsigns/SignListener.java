@@ -146,7 +146,12 @@ public class SignListener implements Listener {
             return;
         }
 
-        if (!handleSignCreation(event.getPlayer(), event.getBlock(), event.getLines())) {
+        String[] lines = event.getLines();
+        if (handleSignCreation(event.getPlayer(), event.getBlock(), lines)) {
+            for (int i = 0; i < lines.length; i++) {
+                event.setLine(i, lines[i]);
+            }
+        } else {
             event.setCancelled(true);
         }
     }
