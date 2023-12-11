@@ -40,6 +40,10 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.server.ServiceRegisterEvent;
+import org.bukkit.event.server.ServiceUnregisterEvent;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -92,6 +96,20 @@ public final class PlotSigns extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new SignListener(this), this);
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getCommand("plotsigns").setExecutor(new PlotSignsCommand(this));
+        getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onServiceRegister(ServiceRegisterEvent event) {
+                if (event.getProvider().getProvider() instanceof Economy) {
+                    setupEconomy();
+                }
+            }
+            @EventHandler
+            public void onServiceUnregister(ServiceUnregisterEvent event) {
+                if (event.getProvider().getProvider() instanceof Economy) {
+                    setupEconomy();
+                }
+            }
+        }, this);
     }
 
     private boolean setupEconomy() {
@@ -103,6 +121,7 @@ public final class PlotSigns extends JavaPlugin {
             return false;
         }
         economy = rsp.getProvider();
+        getLogger().info("Using " + economy.getName() + " as Economy provider");
         return economy != null;
     }
 
