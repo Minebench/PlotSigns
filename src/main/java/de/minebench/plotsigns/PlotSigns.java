@@ -176,23 +176,27 @@ public final class PlotSigns extends JavaPlugin {
         if (region.getOwners().size() > 0) {
             for (UUID ownerId : region.getOwners().getUniqueIds()) {
                 OfflinePlayer owner = getServer().getOfflinePlayer(ownerId);
-                EconomyResponse deposit = getEconomy().depositPlayer(owner, earnedPerOwner);
-                if (!deposit.transactionSuccess()) {
-                    getLogger().log(Level.WARNING, "Error while depositing " + deposit.amount + " to " + owner.getName() + "/" + ownerId + " from region " + region.getId() + ". " + deposit.errorMessage);
-                } else {
-                    getLogger().log(Level.INFO, owner.getName() + "/" + ownerId + " received " + deposit.amount + " from sale of region " + region.getId() + ".");
-                }
+                try {
+                    EconomyResponse deposit = getEconomy().depositPlayer(owner, earnedPerOwner);
+                    if (!deposit.transactionSuccess()) {
+                        getLogger().log(Level.WARNING, "Error while depositing " + deposit.amount + " to " + owner.getName() + "/" + ownerId + " from region " + region.getId() + ". " + deposit.errorMessage);
+                    } else {
+                        getLogger().log(Level.INFO, owner.getName() + "/" + ownerId + " received " + deposit.amount + " from sale of region " + region.getId() + ".");
+                    }
 
-                String message = getLang("buy.your-plot-sold",
-                            "region", region.getId(),
-                            "buyer", player.getName(),
-                            "earned", String.valueOf(earnedPerOwner),
-                            "price", String.valueOf(price)
-                );
-                if (owner.getPlayer() != null) {
-                    owner.getPlayer().sendMessage(message);
-                } else {
-                    registerMessageIntent(ownerId, message);
+                    String message = getLang("buy.your-plot-sold",
+                                "region", region.getId(),
+                                "buyer", player.getName(),
+                                "earned", String.valueOf(earnedPerOwner),
+                                "price", String.valueOf(price)
+                    );
+                    if (owner.getPlayer() != null) {
+                        owner.getPlayer().sendMessage(message);
+                    } else {
+                        registerMessageIntent(ownerId, message);
+                    }
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING, "Error while depositing " + earnedPerOwner + " to " + owner.getName() + "/" + ownerId + " from region " + region.getId() + ".", e);
                 }
             }
         }
