@@ -121,7 +121,7 @@ public class PlotSignsCommand implements CommandExecutor {
 
                     try {
                         double price = Double.parseDouble(args[2]);
-                        String perm = region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
+                        String perm = args.length > 3 ? args[3] : region.getFlag(PlotSigns.PLOT_TYPE_FLAG);
                         plugin.makeRegionBuyable(region, price, perm);
 
                         if (plugin.getConfig().getBoolean("update-all-sell-signs") && sender instanceof Entity) {
@@ -134,7 +134,7 @@ public class PlotSignsCommand implements CommandExecutor {
                         sender.sendMessage(ChatColor.RED + "Error while trying to make the region buyable! " + e.getMessage());
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <price>");
+                    sender.sendMessage(ChatColor.RED + "Usage: /" + label + " " + args[0] + " <region> <price> [<type>]");
                 }
                 return true;
 
